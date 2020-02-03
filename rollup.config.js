@@ -11,6 +11,16 @@ const isProduction = process.env.NODE_ENV === 'production'
 
 export default [
   {
+    input: './src/fourwings-worker/index.js',
+    output: {
+      file: './workers-dist/fourwings-worker.js',
+      format: 'iife',
+      sourcemap: true,
+      name: 'FourWingsWorker',
+    },
+    plugins: [resolve(), commonjs()],
+  },
+  {
     input: ['./src/index.js'],
     output: {
       dir: distFolder,
