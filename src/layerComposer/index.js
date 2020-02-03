@@ -8,7 +8,7 @@ export const DEFAULT_CONFIG = {
   sprite: 'https://raw.githubusercontent.com/GlobalFishingWatch/map-gl-sprites/master/out/sprites',
 }
 
-class Composer {
+class LayerComposer {
   constructor(params) {
     this.version = DEFAULT_CONFIG.version
     this.glyphs = params && params.glyphs ? params.glyphs : DEFAULT_CONFIG.glyphs
@@ -96,4 +96,4 @@ class Composer {
   }
 }
 
-export default Composer
+export default LayerComposer

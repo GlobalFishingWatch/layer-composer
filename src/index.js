@@ -1,2 +1,2 @@
-export { default, DEFAULT_CONFIG } from './composer/'
-export { TYPES } from './composer/generators'
+export { default as LayerComposer, DEFAULT_CONFIG } from './layerComposer'
+export { TYPES, HEATMAP_GEOM_TYPES, HEATMAP_COLOR_RAMPS } from './layerComposer/generators'
