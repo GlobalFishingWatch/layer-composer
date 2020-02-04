@@ -6,11 +6,13 @@
 // or
 // "copy-workers:watch": "./node_modules/@globalfishingwatch/map-styler/scripts/copy-workers.js --watch"
 
+/* eslint-disable @typescript-eslint/no-var-requires */
 const fs = require('fs')
-const args = process.argv.slice(2)
-
-const dest = 'public/fourwings-worker.js'
-const source = './node_modules/@globalfishingwatch/map-styler/dist-workers/fourwings-worker.js'
+const pkg = require('../package.json')
+const distFolder = pkg.main.split('/')[0]
+const { workerName, libraryName } = pkg
+const dest = `public/${workerName}.js`
+const source = `./node_modules/@globalfishingwatch/${libraryName}/${distFolder}/workers/${workerName}.js`
 
 const dests = [dest]
 const sources = [source]
@@ -23,10 +25,11 @@ const cp = () => {
   dests.forEach((_, i) => {
     fs.copyFileSync(sources[i], dests[i])
   })
-  console.log(`Copied map-styler dist worker to public folder 👍 ${source} -> ${dest} `)
+  console.log(`Copied ${libraryName} dist worker to public folder 👍 ${source} -> ${dest} `)
 }
 
 cp()
+const args = process.argv.slice(2)
 if (args[0] === '--watch') {
   fs.watchFile(source, () => {
     cp()
