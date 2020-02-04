@@ -18,7 +18,7 @@
     "rollup-plugin-terser": "^5.2.0"
   },
   "name": "@globalfishingwatch/map-styler",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Tools to convert layer configuration to data structures needed in Mapbox GL GFW interactive maps ",
   "main": "build/index.js",
   "repository": "git@github.com:GlobalFishingWatch/map-styler.git",
