@@ -13,7 +13,7 @@ export default [
   {
     input: './src/fourwings-worker/index.js',
     output: {
-      file: './workers-dist/fourwings-worker.js',
+      file: './dist-workers/fourwings-worker.js',
       format: 'iife',
       sourcemap: true,
       name: 'FourWingsWorker',

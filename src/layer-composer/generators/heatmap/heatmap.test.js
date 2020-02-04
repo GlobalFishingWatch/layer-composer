@@ -34,8 +34,8 @@ test('returns a valid style for a simple static gridded heatmap', async () => {
   const heatmapGenerator = new HeatmapGenerator({ fastTilesAPI: FAST_TILES_API })
   const heatmapStyle = heatmapGenerator.getStyle(LAYER_DEFINITION)
 
-  const LayerManager = new Composer()
-  const { style } = LayerManager.getGLStyle([
+  const LayerComposer = new Composer()
+  const { style } = LayerComposer.getGLStyle([
     {
       type: HEATMAP_TYPE,
       ...LAYER_DEFINITION,

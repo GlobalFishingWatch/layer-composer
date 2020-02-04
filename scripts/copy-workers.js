@@ -10,7 +10,7 @@ const fs = require('fs')
 const args = process.argv.slice(2)
 
 const dest = 'public/fourwings-worker.js'
-const source = './node_modules/@globalfishingwatch/map-styler/workers-dist/fourwings-worker.js'
+const source = './node_modules/@globalfishingwatch/map-styler/dist-workers/fourwings-worker.js'
 
 const dests = [dest]
 const sources = [source]

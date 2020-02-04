@@ -105,8 +105,8 @@ dist
 
 
 # builds
-build
-/workers-dist
+dist
+/dist-workers
 
 # misc
 .DS_Store
