@@ -5,6 +5,7 @@ import CartoGenerator, {
   CARTO_POLYGONS_TYPE as CARTO_POLYGONS,
   CARTO_FISHING_MAP_API,
 } from './carto-polygons/carto-polygons'
+
 import HeatmapGenerator, {
   HEATMAP_TYPE,
   HEATMAP_GEOM_TYPES,

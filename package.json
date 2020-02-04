@@ -45,6 +45,7 @@
     "vt-pbf": "^3.1.1"
   },
   "devDependencies": {
+    "@mapbox/mapbox-gl-style-spec": "^13.11.0",
     "@satellitestudio/eslint-config": "^1.2.1",
     "@types/jest": "^24.0.25",
     "@types/mapbox-gl": "^1.7.0",

@@ -1,9 +1,11 @@
+import { LayerComposerLayer } from 'types/layer-composer'
+
 export const BACKGROUND_TYPE = 'BACKGROUND'
 
 class BackgroundGenerator {
   type = BACKGROUND_TYPE
 
-  _getStyleLayers = (layer) => [
+  _getStyleLayers = (layer: LayerComposerLayer) => [
     {
       id: 'background',
       type: 'background',
@@ -16,7 +18,7 @@ class BackgroundGenerator {
     },
   ]
 
-  getStyle = (layer) => {
+  getStyle = (layer: LayerComposerLayer) => {
     return {
       id: layer.id,
       sources: [],

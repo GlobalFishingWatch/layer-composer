@@ -1,5 +1,6 @@
 import Generators from './generators'
 import { flatObjectArrays, flatObjectToArray } from './utils'
+import { LayerComposerGl, LayerComposerOptions, LayerComposerLayer } from 'types/layer-composer'
 
 export const DEFAULT_CONFIG = {
   version: 8,
@@ -9,18 +10,24 @@ export const DEFAULT_CONFIG = {
 }
 
 class LayerComposer {
-  constructor(params) {
-    this.version = DEFAULT_CONFIG.version
-    this.glyphs = params && params.glyphs ? params.glyphs : DEFAULT_CONFIG.glyphs
-    this.sprite = params && params.sprite ? params.sprite : DEFAULT_CONFIG.sprite
-    this.generators = params && params.generators ? params.generators : Generators
+  version: number
+  glyphs: string
+  sprite: string
+  generators: { [key: string]: any }
+  latestGenerated: any
+
+  constructor(params?: LayerComposerOptions) {
+    this.version = (params && params.version) || DEFAULT_CONFIG.version
+    this.glyphs = (params && params.glyphs) || DEFAULT_CONFIG.glyphs
+    this.sprite = (params && params.sprite) || DEFAULT_CONFIG.sprite
+    this.generators = (params && params.generators) || Generators
 
     // Used to cache results and always return the latest style in promises
     this.latestGenerated = {}
   }
 
   // Sources dictionary for id and array of sources per layer
-  _getGeneratedLayerSource = (layers) => {
+  _getGeneratedLayerSource = (layers: LayerComposerGl[]) => {
     return Object.fromEntries(
       layers
         .filter((layer) => layer.sources && layer.sources.length)
@@ -29,7 +36,7 @@ class LayerComposer {
   }
 
   // Same here for layers
-  _getGeneratedLayerLayers = (layers) => {
+  _getGeneratedLayerLayers = (layers: LayerComposerGl[]) => {
     return Object.fromEntries(
       layers
         .filter((layer) => layer.layers && layer.layers.length)
@@ -38,9 +45,9 @@ class LayerComposer {
   }
 
   // Uses generators to return the layer with sources and layers
-  _getGeneratedLayer = (layer) => {
+  _getGeneratedLayer = (layer: LayerComposerLayer) => {
     if (!this.generators[layer.type]) {
-      throw new Error('There is no styleLayer generator loaded for the layer:', layer)
+      throw new Error(`There is no styleLayer generator loaded for the layer: ${layer}}`)
     }
     return this.generators[layer.type].getStyle(layer)
   }
@@ -57,16 +64,16 @@ class LayerComposer {
   }
 
   // Main mathod of the library which uses the privates one to compose the style
-  getGLStyle = (layers) => {
+  getGLStyle = (layers: LayerComposerLayer[]) => {
     if (!layers) {
       console.warn('No layers passed to layer manager')
       return this._getStyleJson()
     }
 
-    let layersPromises = []
+    let layersPromises: Promise<LayerComposerGl>[] = []
     const layersGenerated = layers.map((layer) => {
       const { promise, promises, ...rest } = this._getGeneratedLayer(layer)
-      let layerPromises = []
+      let layerPromises: Promise<LayerComposerGl>[] = []
       if (promise) {
         layerPromises = [promise]
       } else if (promises) {

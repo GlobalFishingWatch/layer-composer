@@ -1,9 +1,9 @@
-export const flatObjectArrays = (object = {}) => {
-  let objectParsed = {}
+export const flatObjectArrays = (object = {} as any) => {
+  let objectParsed: { [key: string]: any } = {}
   Object.keys(object).forEach((key) => {
     if (object[key] && object[key].length) {
       const arrayObject = Object.fromEntries(
-        object[key].map((source) => {
+        object[key].map((source: any) => {
           const { id, ...rest } = source
           return [id, rest]
         })
@@ -16,5 +16,5 @@ export const flatObjectArrays = (object = {}) => {
   return objectParsed
 }
 
-export const flatObjectToArray = (object) =>
+export const flatObjectToArray = (object = {}) =>
   Object.values(object).flatMap((layerGroup) => layerGroup)
