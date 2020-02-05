@@ -1,6 +1,8 @@
-import Pbf from 'pbf'
 import { VectorTile } from '@mapbox/vector-tile'
 import { GEOM_TYPES } from './constants'
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Pbf = require('pbf')
 
 export const BUFFER_HEADERS = ['cell', 'min', 'max']
 

@@ -1,12 +1,13 @@
-import Pbf from 'pbf'
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { VectorTile } from '@mapbox/vector-tile'
-import geojsonhint from '@mapbox/geojsonhint'
-import geojsonValidation from 'geojson-validation'
-import tilebelt from '@mapbox/tilebelt'
 import aggregate, { rawTileToIntArray } from '../aggregate'
 
-import fs from 'fs'
-import { performance } from 'perf_hooks'
+const geojsonValidation = require('geojson-validation')
+const geojsonhint = require('@mapbox/geojsonhint')
+const Pbf = require('pbf')
+const tilebelt = require('@mapbox/tilebelt')
+const fs = require('fs')
+const { performance } = require('perf_hooks')
 
 const tileset = 'carriers'
 const quantizeOffset = new Date('2017-01-01T00:00:00.000Z').getTime() / 1000 / 60 / 60 / 24 // 17167

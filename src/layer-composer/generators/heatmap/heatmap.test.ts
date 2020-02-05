@@ -6,7 +6,7 @@ import HeatmapGenerator, {
   HEATMAP_COLOR_RAMPS,
   DEFAULT_QUANTIZE_OFFSET,
   toDays,
-} from './heatmap.js'
+} from './heatmap'
 
 const FAST_TILES_API = 'https://fst-tiles-jzzp2ui3wq-uc.a.run.app/v1/'
 const START = '2019-01-01T00:00:00.000Z'

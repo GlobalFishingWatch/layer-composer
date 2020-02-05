@@ -1,8 +1,11 @@
 /* eslint no-restricted-globals: "off" */
+
 import vtpbf from 'vt-pbf'
 import geojsonVt from 'geojson-vt'
-import tilebelt from '@mapbox/tilebelt'
 import aggregate, { rawTileToIntArray } from './aggregate'
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const tilebelt = require('@mapbox/tilebelt')
 
 // TODO use different tsconfig to include worker types here
 // declare const self: ServiceWorkerGlobalScope

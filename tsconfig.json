@@ -9,13 +9,19 @@
     "strict": true,
     "sourceMap": true,
     "declaration": true,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "declarationDir": "dist/types",
     "outDir": "dist/lib",
     "typeRoots": [
-      "node_modules/@types"
-    ]
+      "node_modules/@types",
+    ],
+    "paths": {
+      "lodash/*": [
+        "node_modules/@types/lodash-es/*"
+      ],
+    },
   }
 }

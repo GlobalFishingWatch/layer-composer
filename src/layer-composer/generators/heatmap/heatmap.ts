@@ -1,14 +1,15 @@
-import memoizeOne from 'memoize-one'
 import flatten from 'lodash/flatten'
 import compact from 'lodash/compact'
 import debounce from 'lodash/debounce'
 import zip from 'lodash/zip'
-import paintByGeomType from './heatmap-layers-paint'
 import { LayerComposerLayer } from 'types/layer-composer'
 import { HeatmapGeoms } from 'types/fourwinds'
+import paintByGeomType from './heatmap-layers-paint'
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const memoizeOne = require('memoize-one')
 
 export const HEATMAP_TYPE = 'HEATMAP'
-
 const FAST_TILES_KEY = '__fast_tiles__'
 const DEFAULT_FAST_TILES_API = 'https://fst-tiles-jzzp2ui3wq-uc.a.run.app/v1/'
 const BASE_WORKER_URL = `https://${FAST_TILES_KEY}/{z}/{x}/{y}`
@@ -130,7 +131,7 @@ class HeatmapGenerator {
     return serverSideFilters
   }
 
-  _fetchStats = memoizeOne((endpoint, tileset, zoom, serverSideFilters) => {
+  _fetchStats = memoizeOne((endpoint: any, tileset: any, zoom: any, serverSideFilters: any) => {
     this.loadingStats = true
     const statsUrl = new URL(`${endpoint}${tileset}/statistics/${zoom}`)
     if (serverSideFilters) {
