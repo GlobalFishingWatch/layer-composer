@@ -5,6 +5,7 @@ import debounce from 'lodash/debounce'
 import zip from 'lodash/zip'
 import paintByGeomType from './heatmap-layers-paint'
 import { LayerComposerLayer } from 'types/layer-composer'
+import { HeatmapGeoms } from 'types/fourwinds'
 
 export const HEATMAP_TYPE = 'HEATMAP'
 
@@ -18,10 +19,6 @@ export const toDays = (date: string) => {
 
 export const DEFAULT_QUANTIZE_OFFSET = toDays('2019-01-01T00:00:00.000Z')
 
-export type Geoms = 'blob' | 'gridded' | 'extruded'
-export type HeatmapGeoms = {
-  [key: string]: Geoms
-}
 export const HEATMAP_GEOM_TYPES: HeatmapGeoms = {
   BLOB: 'blob',
   GRIDDED: 'gridded',
@@ -30,7 +27,7 @@ export const HEATMAP_GEOM_TYPES: HeatmapGeoms = {
 
 export type GeomGl = 'heatmap' | 'fill' | 'fill-extrusion'
 export type HeatmapGeomGL = {
-  [key in string]: GeomGl
+  [key: string]: GeomGl
 }
 export const HEATMAP_GEOM_TYPES_GL_TYPES: HeatmapGeomGL = {
   [HEATMAP_GEOM_TYPES.BLOB]: 'heatmap',

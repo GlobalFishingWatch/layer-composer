@@ -4,7 +4,7 @@ import { GEOM_TYPES } from './constants'
 
 export const BUFFER_HEADERS = ['cell', 'min', 'max']
 
-export const rawTileToIntArray = (rawTileArrayBuffer, { tileset }) => {
+export const rawTileToIntArray = (rawTileArrayBuffer: any, { tileset }: any) => {
   const tile = new VectorTile(new Pbf(rawTileArrayBuffer))
   const tileLayer = tile.layers[tileset]
 
@@ -55,7 +55,7 @@ export const rawTileToIntArray = (rawTileArrayBuffer, { tileset }) => {
   return buffer
 }
 
-const getCellCoords = (tileBBox, cell, numCells) => {
+const getCellCoords = (tileBBox: any, cell: any, numCells: any) => {
   const col = cell % numCells
   const row = Math.floor(cell / numCells)
   const [minX, minY, maxX, maxY] = tileBBox
@@ -69,7 +69,7 @@ const getCellCoords = (tileBBox, cell, numCells) => {
   }
 }
 
-const getPointGeom = (tileBBox, cell, numCells) => {
+const getPointGeom = (tileBBox: any, cell: any, numCells: any) => {
   const [minX, minY] = tileBBox
   const { col, row, width, height } = getCellCoords(tileBBox, cell, numCells)
 
@@ -82,7 +82,7 @@ const getPointGeom = (tileBBox, cell, numCells) => {
   }
 }
 
-const getSquareGeom = (tileBBox, cell, numCells) => {
+const getSquareGeom = (tileBBox: any, cell: any, numCells: any) => {
   const [minX, minY] = tileBBox
   const { col, row, width, height } = getCellCoords(tileBBox, cell, numCells)
 
@@ -104,17 +104,23 @@ const getSquareGeom = (tileBBox, cell, numCells) => {
   }
 }
 
-const aggregate = (
-  arrayBuffer,
-  {
+interface CurrentFeature {
+  type: 'Feature'
+  properties: {
+    value?: number
+    presence?: string
+  }
+  geometry: any
+}
+const aggregate = (arrayBuffer: any, options: any) => {
+  const {
     quantizeOffset,
     tileBBox,
     delta = 30,
     geomType = GEOM_TYPES.GRIDDED,
     numCells = 64,
     singleFrameStart = null,
-  }
-) => {
+  } = options
   // TODO Here assuming that BLOB --> animation frame. Should it be configurable in another way?
   //      Generator could set it by default to BLOB, but it could be overridden by layer params
   // TODO Should be aggregation, not skipping
@@ -122,30 +128,34 @@ const aggregate = (
 
   const features = []
 
-  let aggregating = []
+  let aggregating: any = []
 
   let currentFeatureIndex = 0
-  let currentFeature = {
+  let currentFeature: CurrentFeature = {
     type: 'Feature',
-    properties: {},
+    properties: {
+      value: 0,
+      presence: '',
+    },
+    geometry: {},
   }
-  let currentFeatureCell
-  let currentFeatureMinTimestamp
-  let currentFeatureMaxTimestamp
+  let currentFeatureCell: any
+  let currentFeatureMinTimestamp: any
+  let currentFeatureMaxTimestamp: any
   let currentFeatureTimestampDelta
   let currentAggregatedValue = 0
   let featureBufferPos = 0
   let head
-  let tail
+  let tail: any
 
-  const writeValueToFeature = (quantizedTail) => {
+  const writeValueToFeature = (quantizedTail: any) => {
     // TODO add skipOddCells check
     // console.log(skipOddCells, currentFeatureCell)
     if (skipOddCells === true && currentFeatureCell % 4 !== 0) {
       return
     }
     if (singleFrameStart === null) {
-      currentFeature.properties[quantizedTail.toString()] = currentAggregatedValue
+      ;(currentFeature.properties as any)[quantizedTail.toString()] = currentAggregatedValue
     } else {
       if (singleFrameStart === quantizedTail) {
         currentFeature.properties.value = currentAggregatedValue
@@ -227,6 +237,7 @@ const aggregate = (
       currentFeature = {
         type: 'Feature',
         properties: {},
+        geometry: {},
       }
       featureBufferPos = 0
       currentAggregatedValue = 0

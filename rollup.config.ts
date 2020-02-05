@@ -15,7 +15,7 @@ const { workerName, libraryName } = pkg
 const isProduction = process.env.NODE_ENV === 'production'
 
 const workerConfig = {
-  input: `./src/${workerName}/index.js`,
+  input: `./src/${workerName}/index.ts`,
   output: {
     file: `./${distFolder}/workers/${workerName}.js`,
     format: 'iife',
