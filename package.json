@@ -17,10 +17,6 @@
   "engines": {
     "node": ">=6.0.0"
   },
-  "files": [
-    "dist",
-    "scripts"
-  ],
   "scripts": {
     "start": "rollup -c rollup.config.ts -w",
     "test": "jest",

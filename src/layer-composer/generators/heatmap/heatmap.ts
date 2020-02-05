@@ -5,9 +5,7 @@ import zip from 'lodash/zip'
 import { LayerComposerLayer } from 'types/layer-composer'
 import { HeatmapGeoms } from 'types/fourwinds'
 import paintByGeomType from './heatmap-layers-paint'
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const memoizeOne = require('memoize-one')
+import memoizeOne from 'memoize-one'
 
 export const HEATMAP_TYPE = 'HEATMAP'
 const FAST_TILES_KEY = '__fast_tiles__'
