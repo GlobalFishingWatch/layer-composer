@@ -1,4 +1,4 @@
-import Composer from '../../'
+import Composer from '../..'
 import { validate as mapboxStyleValidator } from '@mapbox/mapbox-gl-style-spec'
 import HeatmapGenerator, {
   HEATMAP_TYPE,
@@ -19,8 +19,10 @@ test('returns a valid style for a simple static gridded heatmap', async () => {
   const LAYER_DEFINITION = {
     id,
     tileset: TILESET,
+    type: 'HEATMAP',
     start: START,
     end: '2019-04-01T00:00:00.000Z',
+    zoom: 1,
     visible: true,
     geomType: HEATMAP_GEOM_TYPES.GRIDDED,
     colorRamp: HEATMAP_COLOR_RAMPS.PRESENCE,

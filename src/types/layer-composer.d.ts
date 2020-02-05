@@ -1,4 +1,5 @@
 import { AnySourceImpl, Layer } from 'mapbox-gl'
+import { ColorRamps } from 'layer-composer/generators/heatmap/heatmap'
 
 export interface LayerComposerGl {
   id: string
@@ -13,6 +14,12 @@ export interface LayerComposerGenerator {
   getStyle: (layer: LayerComposerLayer) => LayerComposerGl
 }
 
+// TODO FIRST: DEFINE THIS
+export interface LayerComposeStyles {
+  style: any
+  promises?: Promise<any>[]
+}
+
 export interface LayerComposerOptions {
   generators?: { [key: string]: LayerComposerGenerator }
   version?: number
@@ -22,7 +29,7 @@ export interface LayerComposerOptions {
 
 export interface LayerComposerLayer {
   id: string
-  type: 'BACKGROUND' | 'BASEMAP' | 'CARTO_POLYGONS' | 'GL_STYLES' | string
+  type: 'BACKGROUND' | 'BASEMAP' | 'CARTO_POLYGONS' | 'GL_STYLES' | 'HEATMAP' | string
   data?: any
   // TODO review this types
   baseUrl?: string
@@ -35,9 +42,24 @@ export interface LayerComposerLayer {
   opacity?: number
   color?: string
   attribution?: string
-  // Include this types depending on layer typ ?
+  // Include this types depending on layer type ?
+  // Custom carto props
   fillColor?: string
-  strokeColor: string
-  strokeWidth: string
-  radius: string
+  strokeColor?: string
+  strokeWidth?: string
+  radius?: string
+  // Custom heatmap props
+  start: string
+  end: string
+  zoom: number
+  delta?: number
+  tileset: string
+  geomType: string
+  singleFrame?: boolean
+  fetchStats?: boolean
+  serverSideFilter?: string
+  updateColorRampOnTimeChange?: boolean
+  quantizeOffset?: number
+  colorRamp: ColorRamps
+  colorRampMult: number
 }

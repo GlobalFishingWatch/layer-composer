@@ -1,6 +1,11 @@
 import Generators from './generators'
 import { flatObjectArrays, flatObjectToArray } from './utils'
-import { LayerComposerGl, LayerComposerOptions, LayerComposerLayer } from 'types/layer-composer'
+import {
+  LayerComposerGl,
+  LayerComposerOptions,
+  LayerComposerLayer,
+  LayerComposeStyles,
+} from 'types/layer-composer'
 
 export const DEFAULT_CONFIG = {
   version: 8,
@@ -64,10 +69,10 @@ class LayerComposer {
   }
 
   // Main mathod of the library which uses the privates one to compose the style
-  getGLStyle = (layers: LayerComposerLayer[]) => {
+  getGLStyle = (layers: LayerComposerLayer[]): LayerComposeStyles => {
     if (!layers) {
       console.warn('No layers passed to layer manager')
-      return this._getStyleJson()
+      return { style: this._getStyleJson() }
     }
 
     let layersPromises: Promise<LayerComposerGl>[] = []
