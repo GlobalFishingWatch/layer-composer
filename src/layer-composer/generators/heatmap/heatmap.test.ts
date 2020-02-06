@@ -68,14 +68,14 @@ test('returns a valid style for a simple static gridded heatmap', async () => {
             ['linear'],
             ['to-number', ['get', STARTS_AT.toString()]],
             0,
-            'rgba(0, 0, 0, 0)',
+            'rgba(12, 39, 108, 0)',
             1,
-            '#0c276c',
-            3604.5999999999995,
+            'rgb(12, 39, 108)',
+            91.08999999999999,
             '#114685',
-            54006.399999999994,
+            1351.1349999999998,
             '#00ffc3',
-            104408.2,
+            2611.18,
             '#ffffff',
           ],
         },
@@ -86,7 +86,7 @@ test('returns a valid style for a simple static gridded heatmap', async () => {
         id,
         type: 'vector',
         tiles: [
-          `http://__fast_tiles__/{z}/{x}/{y}?tileset=${TILESET}&geomType=${
+          `https://__fast_tiles__/{z}/{x}/{y}?tileset=${TILESET}&geomType=${
             HEATMAP_GEOM_TYPES.GRIDDED
           }&fastTilesAPI=${encodeURIComponent(
             FAST_TILES_API
