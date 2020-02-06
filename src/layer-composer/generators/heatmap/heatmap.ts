@@ -186,7 +186,7 @@ class HeatmapGenerator {
     return [
       {
         id: layer.id,
-        type: 'vector',
+        type: 'vector' as const,
         tiles: [decodeURI(url.toString())],
       },
     ]
@@ -282,6 +282,7 @@ class HeatmapGenerator {
       return [finalValue, color]
     })
 
+    const visibility: 'visible' | 'none' = layer && layer.visible ? 'visible' : 'none'
     return [
       {
         id: layer.id,
@@ -289,7 +290,7 @@ class HeatmapGenerator {
         'source-layer': layer.tileset,
         type: HEATMAP_GEOM_TYPES_GL_TYPES[geomType],
         layout: {
-          visibility: layer.visible === false ? 'none' : 'visible',
+          visibility,
         },
         paint,
         metadata: {
@@ -359,7 +360,7 @@ class HeatmapGenerator {
       this.quantizeOffset = layer.start as any
     }
     const { layers, promise } = this._getStyleLayers(layer)
-    const deltaPromise = this._updateDelta(layer)
+    const deltaPromise: any = this._updateDelta(layer)
     const promises = compact([promise, deltaPromise])
     return {
       id: layer.id,

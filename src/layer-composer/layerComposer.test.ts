@@ -1,8 +1,18 @@
 import LayerComposer, { DEFAULT_CONFIG } from '.'
+import generators from './generators'
 import { validate as mapboxStyleValidator } from '@mapbox/mapbox-gl-style-spec'
 
 test('instanciates with the default config', async () => {
   const layerComposer = new LayerComposer()
+  const objectToMatch = { ...DEFAULT_CONFIG }
+  const { style } = layerComposer.getGLStyle([])
+  expect(style).toMatchObject(objectToMatch)
+  // expect(layerComposer.getGLStyle(glyphPath)).toMatchSnapshot()
+})
+
+test('instanciates with the defaultGenerators config', async () => {
+  const layerComposerConfig = { generators }
+  const layerComposer = new LayerComposer(layerComposerConfig)
   const objectToMatch = { ...DEFAULT_CONFIG }
   const { style } = layerComposer.getGLStyle([])
   expect(style).toMatchObject(objectToMatch)
