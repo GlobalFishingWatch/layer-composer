@@ -5,7 +5,7 @@ import {
   LayerComposerOptions,
   LayerComposerLayer,
   LayerComposeStyles,
-} from 'types/layer-composer'
+} from './types'
 
 export const DEFAULT_CONFIG = {
   version: 8,

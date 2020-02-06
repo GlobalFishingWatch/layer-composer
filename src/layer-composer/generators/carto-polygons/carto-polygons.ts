@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import layersDirectory from './carto-polygons-layers'
-import { LayerComposerLayer, LayerComposerGl } from 'types/layer-composer'
+import { LayerComposerLayer, LayerComposerGl } from 'layer-composer/types'
 
 export const CARTO_POLYGONS_TYPE = 'CARTO_POLYGONS'
 export const CARTO_FISHING_MAP_API = 'https://carto.globalfishingwatch.org/user/admin/api/v1/map'

@@ -1,11 +1,22 @@
-import { LayerComposerLayer } from 'types/layer-composer'
+import { LayerComposerLayer } from 'layer-composer/types'
 
 export const BACKGROUND_TYPE = 'BACKGROUND'
+
+interface BackgroundLayer {
+  id: string
+  type: 'background'
+  layout: {
+    visibility: 'visible' | 'none'
+  }
+  paint: {
+    'background-color': string
+  }
+}
 
 class BackgroundGenerator {
   type = BACKGROUND_TYPE
 
-  _getStyleLayers = (layer: LayerComposerLayer) => [
+  _getStyleLayers = (layer: LayerComposerLayer): BackgroundLayer[] => [
     {
       id: 'background',
       type: 'background',

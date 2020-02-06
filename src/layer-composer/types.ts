@@ -3,8 +3,8 @@ import { ColorRamps } from 'layer-composer/generators/heatmap/heatmap'
 
 export interface LayerComposerGl {
   id: string
-  sources: [AnySourceImpl]
-  layers: [Layer]
+  sources: AnySourceImpl[]
+  layers: Layer[]
   promise?: Promise<LayerComposerGl>
   promises?: Promise<LayerComposerGl>[]
 }

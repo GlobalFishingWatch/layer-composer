@@ -4,8 +4,9 @@ export {
   LayerComposeStyles,
   LayerComposerOptions,
   LayerComposerLayer,
-} from './types/layer-composer'
+} from './layer-composer/types'
 export { default, DEFAULT_CONFIG } from './layer-composer'
+
 export {
   default as defaultGenerators,
   TYPES,

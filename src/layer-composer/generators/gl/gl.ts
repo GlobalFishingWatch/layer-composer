@@ -1,4 +1,4 @@
-import { LayerComposerLayer } from 'types/layer-composer'
+import { LayerComposerLayer } from 'layer-composer/types'
 
 export const GL_TYPE = 'GL_STYLES'
 

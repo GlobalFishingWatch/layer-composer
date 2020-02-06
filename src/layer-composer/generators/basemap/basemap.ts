@@ -1,5 +1,5 @@
 import layersDirectory from './basemap-layers'
-import { LayerComposerLayer } from 'types/layer-composer'
+import { LayerComposerLayer } from 'layer-composer/types'
 
 export const BASEMAP_TYPE = 'BASEMAP'
 
