@@ -115,3 +115,5 @@ dist-workers
 .env.development.local
 .env.test.local
 .env.production.local
+
+scripts/data
