@@ -1,9 +1,9 @@
 export {
-  LayerComposerGl,
-  LayerComposerGenerator,
-  LayerComposeStyles,
+  LayerComposerStyles,
   LayerComposerOptions,
-  LayerComposerLayer,
+  GeneratorStyles,
+  Generator,
+  GeneratorConfig,
 } from './layer-composer/types'
 export { default, DEFAULT_CONFIG } from './layer-composer'
 

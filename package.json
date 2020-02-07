@@ -9,7 +9,7 @@
   "libraryName": "map-styler",
   "workerName": "fourwings-worker",
   "main": "dist/map-styler.umd.js",
-  "module": "dist/map-styler.es5.js",
+  "module": "dist/map-styler.esm.js",
   "typings": "dist/types/map-styler.d.ts",
   "author": "@satellitestudio<contact@satellitestud.io>",
   "repository": "git@github.com:GlobalFishingWatch/map-styler.git",

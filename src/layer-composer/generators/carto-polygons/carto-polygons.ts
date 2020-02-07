@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import layersDirectory from './carto-polygons-layers'
-import { LayerComposerLayer, LayerComposerGl } from 'layer-composer/types'
+import { GeneratorConfig, GeneratorStyles } from 'layer-composer/types'
 
 export const CARTO_POLYGONS_TYPE = 'CARTO_POLYGONS'
 export const CARTO_FISHING_MAP_API = 'https://carto.globalfishingwatch.org/user/admin/api/v1/map'
@@ -38,7 +38,7 @@ class CartoPolygonsGenerator {
     this.baseUrl = baseUrl
   }
 
-  _getStyleSources = (layer: LayerComposerLayer) => {
+  _getStyleSources = (layer: GeneratorConfig) => {
     const { id } = layer
     const layerData = (layersDirectory as any)[layer.id] || layer
     const response = {
@@ -73,7 +73,7 @@ class CartoPolygonsGenerator {
     }
   }
 
-  _getStyleLayers = (layer: LayerComposerLayer) => {
+  _getStyleLayers = (layer: GeneratorConfig) => {
     const isSourceReady = this.tilesCacheByid[layer.id] !== undefined
 
     const layerData = (layersDirectory as any)[layer.id] || layer
@@ -134,7 +134,7 @@ class CartoPolygonsGenerator {
     })
   }
 
-  getStyle = (layer: LayerComposerLayer): LayerComposerGl => {
+  getStyle = (layer: GeneratorConfig): GeneratorStyles => {
     const { sources, promise } = this._getStyleSources(layer) as any
     return {
       id: layer.id,

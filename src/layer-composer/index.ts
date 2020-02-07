@@ -1,10 +1,10 @@
 import Generators from './generators'
 import { flatObjectArrays, flatObjectToArray } from './utils'
 import {
-  LayerComposerGl,
+  LayerComposerStyles,
   LayerComposerOptions,
-  LayerComposerLayer,
-  LayerComposeStyles,
+  GeneratorStyles,
+  GeneratorConfig,
 } from './types'
 
 export const DEFAULT_CONFIG = {
@@ -32,7 +32,7 @@ class LayerComposer {
   }
 
   // Sources dictionary for id and array of sources per layer
-  _getGeneratedLayerSource = (layers: LayerComposerGl[]) => {
+  _getGeneratedLayerSource = (layers: GeneratorStyles[]) => {
     return Object.fromEntries(
       layers
         .filter((layer) => layer.sources && layer.sources.length)
@@ -41,7 +41,7 @@ class LayerComposer {
   }
 
   // Same here for layers
-  _getGeneratedLayerLayers = (layers: LayerComposerGl[]) => {
+  _getGeneratedLayerLayers = (layers: GeneratorStyles[]) => {
     return Object.fromEntries(
       layers
         .filter((layer) => layer.layers && layer.layers.length)
@@ -50,7 +50,7 @@ class LayerComposer {
   }
 
   // Uses generators to return the layer with sources and layers
-  _getGeneratedLayer = (layer: LayerComposerLayer) => {
+  _getGeneratedLayer = (layer: GeneratorConfig) => {
     if (!this.generators[layer.type]) {
       throw new Error(`There is no styleLayer generator loaded for the layer: ${layer}}`)
     }
@@ -69,16 +69,16 @@ class LayerComposer {
   }
 
   // Main mathod of the library which uses the privates one to compose the style
-  getGLStyle = (layers: LayerComposerLayer[]): LayerComposeStyles => {
+  getGLStyle = (layers: GeneratorConfig[]): LayerComposerStyles => {
     if (!layers) {
       console.warn('No layers passed to layer manager')
       return { style: this._getStyleJson() }
     }
 
-    let layersPromises: Promise<LayerComposerGl>[] = []
+    let layersPromises: Promise<GeneratorStyles>[] = []
     const layersGenerated = layers.map((layer) => {
       const { promise, promises, ...rest } = this._getGeneratedLayer(layer)
-      let layerPromises: Promise<LayerComposerGl>[] = []
+      let layerPromises: Promise<GeneratorStyles>[] = []
       if (promise) {
         layerPromises = [promise]
       } else if (promises) {

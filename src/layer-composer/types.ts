@@ -1,33 +1,35 @@
 import { AnySourceImpl, Layer } from 'mapbox-gl'
 import { ColorRamps } from 'layer-composer/generators/heatmap/heatmap'
 
-export interface LayerComposerGl {
-  id: string
-  sources: AnySourceImpl[]
-  layers: Layer[]
-  promise?: Promise<LayerComposerGl>
-  promises?: Promise<LayerComposerGl>[]
-}
-
-export interface LayerComposerGenerator {
-  type: string
-  getStyle: (layer: LayerComposerLayer) => LayerComposerGl
-}
-
 // TODO FIRST: DEFINE THIS
-export interface LayerComposeStyles {
+// This what is returned by LayerComposer.getGLStyle
+export interface LayerComposerStyles {
   style: any
   promises?: Promise<any>[]
 }
 
 export interface LayerComposerOptions {
-  generators?: { [key: string]: LayerComposerGenerator }
+  generators?: { [key: string]: Generator }
   version?: number
   glyphs?: string
   sprite?: string
 }
 
-export interface LayerComposerLayer {
+// This is what is returned by a <Generator>.getStyle
+export interface GeneratorStyles {
+  id: string
+  sources: AnySourceImpl[]
+  layers: Layer[]
+  promise?: Promise<GeneratorStyles>
+  promises?: Promise<GeneratorStyles>[]
+}
+
+export interface Generator {
+  type: string
+  getStyle: (layer: GeneratorConfig) => GeneratorStyles
+}
+
+export interface GeneratorConfig {
   id: string
   type: 'BACKGROUND' | 'BASEMAP' | 'CARTO_POLYGONS' | 'GL_STYLES' | 'HEATMAP' | string
   data?: any

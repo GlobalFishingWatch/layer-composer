@@ -1,12 +1,12 @@
 import layersDirectory from './basemap-layers'
-import { LayerComposerLayer } from 'layer-composer/types'
+import { GeneratorConfig } from 'layer-composer/types'
 
 export const BASEMAP_TYPE = 'BASEMAP'
 
 class BasemapGenerator {
   type = BASEMAP_TYPE
 
-  _getStyleSources = (layer: LayerComposerLayer) => {
+  _getStyleSources = (layer: GeneratorConfig) => {
     const { id, attribution } = layer
     const source = {
       ...layer.source,
@@ -15,12 +15,12 @@ class BasemapGenerator {
     }
     return [{ id, ...source }]
   }
-  _getStyleLayers = (layer: LayerComposerLayer) => {
+  _getStyleLayers = (layer: GeneratorConfig) => {
     const layerData = (layersDirectory as any)[layer.id]
     return layerData !== undefined ? layerData.layers : []
   }
 
-  getStyle = (layer: LayerComposerLayer) => {
+  getStyle = (layer: GeneratorConfig) => {
     return {
       id: layer.id,
       sources: this._getStyleSources(layer),

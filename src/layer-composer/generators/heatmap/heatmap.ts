@@ -2,7 +2,7 @@ import flatten from 'lodash/flatten'
 import compact from 'lodash/compact'
 import debounce from 'lodash/debounce'
 import zip from 'lodash/zip'
-import { LayerComposerLayer } from 'layer-composer/types'
+import { GeneratorConfig } from 'layer-composer/types'
 import { HeatmapGeoms } from 'fourwings-worker/types'
 import paintByGeomType from './heatmap-layers-paint'
 import memoizeOne from 'memoize-one'
@@ -152,7 +152,7 @@ class HeatmapGenerator {
       })
   })
 
-  _getStyleSources = (layer: LayerComposerLayer) => {
+  _getStyleSources = (layer: GeneratorConfig) => {
     if (!layer.start || !layer.end || !layer.tileset) {
       throw new Error(
         `Heatmap generator must specify start, end and tileset parameters in ${layer}`
@@ -192,7 +192,7 @@ class HeatmapGenerator {
     ]
   }
 
-  _getHeatmapLayers = (layer: LayerComposerLayer) => {
+  _getHeatmapLayers = (layer: GeneratorConfig) => {
     const geomType = layer.geomType || HEATMAP_GEOM_TYPES.GRIDDED
     const colorRampType = layer.colorRamp || HEATMAP_COLOR_RAMPS.PRESENCE
     const colorRampMult = layer.colorRampMult || 1
@@ -301,7 +301,7 @@ class HeatmapGenerator {
     ]
   }
 
-  _getStyleLayers = (layer: LayerComposerLayer) => {
+  _getStyleLayers = (layer: GeneratorConfig) => {
     if (layer.fetchStats !== true) {
       return { layers: this._getHeatmapLayers(layer) }
     }
@@ -333,7 +333,7 @@ class HeatmapGenerator {
     return { layers, promise }
   }
 
-  _updateDelta = (layer: LayerComposerLayer) => {
+  _updateDelta = (layer: GeneratorConfig) => {
     const newDelta = getDelta(layer.start, layer.end)
     if (newDelta === this.delta) return null
 
@@ -351,7 +351,7 @@ class HeatmapGenerator {
   }
   _setDelta = debounce(this._updateDelta, 1000)
 
-  getStyle = (layer: LayerComposerLayer) => {
+  getStyle = (layer: GeneratorConfig) => {
     if (!this.delta) {
       this.delta = getDelta(layer.start, layer.end)
     }
