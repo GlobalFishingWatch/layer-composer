@@ -1,6 +1,5 @@
 import sort, { convertLegacyGroups } from './sort'
-import { ExtendedLayer } from '../types/types'
-import { Group } from './types'
+import { ExtendedLayer, Group } from '../types/types'
 import { Style } from 'mapbox-gl'
 
 const mock: Style = {

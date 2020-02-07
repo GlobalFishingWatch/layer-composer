@@ -1,3 +1,5 @@
+import { Group } from '../../../types/types'
+
 const layers = {
   'north-star': {
     source: {
@@ -14,6 +16,9 @@ const layers = {
         id: 'north-star',
         type: 'raster',
         source: 'north-star',
+        metadata: {
+          group: Group.Basemap,
+        },
       },
     ],
   },

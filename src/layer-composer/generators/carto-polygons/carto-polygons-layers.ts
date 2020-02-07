@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
+
+import { Group } from '../../../types/types'
+
 export default {
   cp_rfmo: {
     source: {
@@ -11,6 +14,9 @@ export default {
         type: 'fill',
         source: 'cp_rfmo',
         'source-layer': 'cp_rfmo',
+        metadata: {
+          group: Group.OutlinePolygons,
+        },
       },
     ],
   },
@@ -26,6 +32,9 @@ export default {
         type: 'fill',
         source: 'mpant',
         'source-layer': 'mpant',
+        metadata: {
+          group: Group.OutlinePolygons,
+        },
       },
       {
         id: 'mpant-labels',
@@ -36,6 +45,9 @@ export default {
           'text-field': '{name}',
           'text-font': ['Roboto Mono Light'],
           'text-size': 10,
+        },
+        metadata: {
+          group: Group.Label,
         },
       },
     ],
@@ -53,6 +65,9 @@ export default {
         type: 'fill',
         source: 'eez',
         'source-layer': 'eez',
+        metadata: {
+          group: Group.OutlinePolygons,
+        },
       },
       {
         id: 'eez-labels',
@@ -63,6 +78,9 @@ export default {
           'text-field': '{name}',
           'text-font': ['Roboto Mono Light'],
           'text-size': 10,
+        },
+        metadata: {
+          group: Group.Label,
         },
       },
     ],
@@ -78,9 +96,13 @@ export default {
         type: 'fill',
         source: 'bluefin_rfmo',
         'source-layer': 'bluefin_rfmo',
+        metadata: {
+          group: Group.OutlinePolygons,
+        },
       },
     ],
   },
+  // TODO Move to Basemap generator
   landmass: {
     source: {
       sql: 'SELECT the_geom, the_geom_webmercator, cartodb_id FROM landmass',

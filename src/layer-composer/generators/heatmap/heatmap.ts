@@ -2,6 +2,7 @@ import flatten from 'lodash/flatten'
 import compact from 'lodash/compact'
 import debounce from 'lodash/debounce'
 import zip from 'lodash/zip'
+import { Group } from '../../../types/types'
 import { GeneratorConfig } from 'layer-composer/types'
 import { HeatmapGeoms } from 'fourwings-worker/types'
 import paintByGeomType from './heatmap-layers-paint'
@@ -296,6 +297,7 @@ class HeatmapGenerator {
         metadata: {
           legend,
           currentlyAt: pickValueAt,
+          group: Group.Heatmap,
         },
       },
     ]
