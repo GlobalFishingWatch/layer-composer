@@ -1,0 +1,27 @@
+{
+  "include": [ "src" ],
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "moduleResolution": "node",
+    "target": "es5",
+    "module":"es2015",
+    "lib": ["es2015", "es2016", "es2017", "es2019", "dom"],
+    "strict": true,
+    "sourceMap": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "declarationDir": "dist/types",
+    "outDir": "dist/lib",
+    "typeRoots": [
+      "node_modules/@types",
+    ],
+    "paths": {
+      "lodash/*": [
+        "node_modules/@types/lodash-es/*"
+      ],
+    },
+  }
+}

@@ -1,11 +1,14 @@
 /* eslint no-restricted-globals: "off" */
 
-import Pbf from 'pbf'
 import vtpbf from 'vt-pbf'
-import { VectorTile } from '@mapbox/vector-tile'
 import geojsonVt from 'geojson-vt'
-import tilebelt from '@mapbox/tilebelt'
 import aggregate, { rawTileToIntArray } from './aggregate'
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const tilebelt = require('@mapbox/tilebelt')
+
+// TODO use different tsconfig to include worker types here
+// declare const self: ServiceWorkerGlobalScope
 
 const FAST_TILES_KEY = '__fast_tiles__'
 const FAST_TILES_KEY_RX = new RegExp(FAST_TILES_KEY)
@@ -14,20 +17,20 @@ const CACHE_TIMESTAMP_HEADER_KEY = 'sw-cache-timestamp'
 const CACHE_NAME = FAST_TILES_KEY
 const CACHE_MAX_AGE_MS = 60 * 60 * 1000
 
-const isoToDate = (iso) => {
+const isoToDate = (iso: string) => {
   return new Date(iso).getTime()
 }
 
-const isoToDay = (iso) => {
+const isoToDay = (iso: string) => {
   return isoToDate(iso) / 1000 / 60 / 60 / 24
 }
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
   console.log('install sw')
   // cleaning up old cache values...
 })
 
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', (event: any) => {
   console.log('activate sw_')
   // self.clients.claim()
 
@@ -40,17 +43,15 @@ self.addEventListener('activate', (event) => {
   // Claim control of clients right after activating
   // This allows
   event.waitUntil(
-    self.clients.claim().then(() => {
+    (self as any).clients.claim().then(() => {
       console.log('Now ready to handle fetches?')
     })
   )
   console.log('Now ready to handle fetches!')
 })
 
-const aggregateIntArray = (
-  intArray,
-  { geomType, numCells, delta, x, y, z, quantizeOffset, start, singleFrameStart }
-) => {
+const aggregateIntArray = (intArray: any, options: any) => {
+  const { geomType, numCells, delta, x, y, z, quantizeOffset, singleFrameStart } = options
   const tileBBox = tilebelt.tileToBBOX([x, y, z])
   const aggregated = aggregate(intArray, {
     quantizeOffset,
@@ -65,14 +66,15 @@ const aggregateIntArray = (
   return aggregated
 }
 
-const decodeTile = (originalResponse, tileset) => {
-  return originalResponse.arrayBuffer().then((buffer) => {
+const decodeTile = (originalResponse: any, tileset: any) => {
+  return originalResponse.arrayBuffer().then((buffer: any) => {
     const intArray = rawTileToIntArray(buffer, { tileset })
     return intArray
   })
 }
 
-const encodeTileResponse = (aggregatedGeoJSON, { x, y, z, tileset }) => {
+const encodeTileResponse = (aggregatedGeoJSON: any, options: any) => {
+  const { x, y, z, tileset } = options
   const tileindex = geojsonVt(aggregatedGeoJSON)
   const newTile = tileindex.getTile(z, x, y)
   const newBuff = vtpbf.fromGeojsonVt({ [tileset]: newTile })
@@ -80,7 +82,7 @@ const encodeTileResponse = (aggregatedGeoJSON, { x, y, z, tileset }) => {
   return new Response(newBuff)
 }
 
-self.addEventListener('fetch', (fetchEvent) => {
+self.addEventListener('fetch', (fetchEvent: any) => {
   const originalUrl = fetchEvent.request.url
 
   if (FAST_TILES_KEY_RX.test(originalUrl) !== true) {
@@ -91,16 +93,16 @@ self.addEventListener('fetch', (fetchEvent) => {
   const tileset = url.searchParams.get('tileset')
   const geomType = url.searchParams.get('geomType')
   const fastTilesAPI = url.searchParams.get('fastTilesAPI')
-  const quantizeOffset = parseInt(url.searchParams.get('quantizeOffset'))
+  const quantizeOffset = parseInt(url.searchParams.get('quantizeOffset') || '0')
   const delta = parseInt(url.searchParams.get('delta') || '10')
   const singleFrame = url.searchParams.get('singleFrame') === 'true'
-  const start = isoToDay(url.searchParams.get('start'))
+  const start = isoToDay(url.searchParams.get('start') || '')
   const serverSideFilters = url.searchParams.get('serverSideFilters')
 
-  const [z, x, y] = originalUrl
+  const [z, x, y] = (originalUrl as any)
     .match(FAST_TILES_KEY_XYZ_RX)
     .slice(1, 4)
-    .map((d) => parseInt(d))
+    .map((d: string) => parseInt(d))
 
   const TILESET_NUM_CELLS = 64
   const aggregateParams = {
@@ -127,10 +129,10 @@ self.addEventListener('fetch', (fetchEvent) => {
   const cachePromise = self.caches.match(finalReq).then((cacheResponse) => {
     const now = new Date().getTime()
     const cachedTimestamp =
-      cacheResponse && parseInt(cacheResponse.headers.get(CACHE_TIMESTAMP_HEADER_KEY))
+      (cacheResponse && parseInt(cacheResponse.headers.get(CACHE_TIMESTAMP_HEADER_KEY) || '')) || 0
     // only get value from cache if it's recent enough
     const hasRecentCache = cacheResponse && now - cachedTimestamp < CACHE_MAX_AGE_MS
-    if (hasRecentCache) {
+    if (hasRecentCache && cacheResponse) {
       return cacheResponse.arrayBuffer().then((ab) => {
         const intArray = new Uint16Array(ab)
         const aggregated = aggregateIntArray(intArray, aggregateParams)
@@ -140,8 +142,8 @@ self.addEventListener('fetch', (fetchEvent) => {
       // console.log('too old, fetching again')
     }
 
-    const fetchPromise = fetch(finalUrl)
-    const decodePromise = fetchPromise.then((fetchResponse) => {
+    const fetchPromise = fetch(finalUrl as any)
+    const decodePromise = fetchPromise.then((fetchResponse: any) => {
       if (!fetchResponse.ok) throw new Error()
       // Response needs to be cloned to m odify headers (used for cache expiration)
       // const responseToCache = fetchResponse.clone()
@@ -150,11 +152,11 @@ self.addEventListener('fetch', (fetchEvent) => {
     })
 
     // Cache fetch response in parallel
-    decodePromise.then((intArray) => {
+    decodePromise.then((intArray: any) => {
       const headers = new Headers()
       const timestamp = new Date().getTime()
       // add extra header to set a timestamp on cache - will be read at cache.matches call
-      headers.set(CACHE_TIMESTAMP_HEADER_KEY, timestamp)
+      headers.set(CACHE_TIMESTAMP_HEADER_KEY, timestamp as any)
       // convert response to decoded int arrays
       const blob = new Blob([intArray], { type: 'application/octet-binary' })
 
@@ -169,7 +171,7 @@ self.addEventListener('fetch', (fetchEvent) => {
     })
 
     // then, aggregate
-    const aggregatePromise = decodePromise.then((intArray) => {
+    const aggregatePromise = decodePromise.then((intArray: any) => {
       const aggregated = aggregateIntArray(intArray, aggregateParams)
       return encodeTileResponse(aggregated, aggregateParams)
     })

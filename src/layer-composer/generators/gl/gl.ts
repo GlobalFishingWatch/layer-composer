@@ -1,17 +1,19 @@
+import { GeneratorConfig } from 'layer-composer/types'
+
 export const GL_TYPE = 'GL_STYLES'
 
 class GlStyleGenerator {
   type = GL_TYPE
 
-  _getStyleSources = (layer) => {
-    return layer.sources.map((glSource) => ({ id: `${layer.id}`, ...glSource }))
+  _getStyleSources = (layer: GeneratorConfig) => {
+    return layer.sources.map((glSource: any) => ({ id: `${layer.id}`, ...glSource }))
   }
 
-  _getStyleLayers = (layer) => {
+  _getStyleLayers = (layer: GeneratorConfig) => {
     const layout = {
       visibility: layer.visible !== undefined ? (layer.visible ? 'visible' : 'none') : 'visible',
     }
-    return layer.layers.map((glLayer, i) => ({
+    return layer.layers.map((glLayer: any, i: number) => ({
       id: `${layer.id}-${i}`,
       source: layer.id,
       ...glLayer,
@@ -22,7 +24,7 @@ class GlStyleGenerator {
     }))
   }
 
-  getStyle = (layer) => {
+  getStyle = (layer: GeneratorConfig) => {
     return {
       id: layer.id,
       // Auto generates sources and glLayers id using layer id when neccesary

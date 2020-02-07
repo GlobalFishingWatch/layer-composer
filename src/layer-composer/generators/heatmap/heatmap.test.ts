@@ -1,4 +1,4 @@
-import Composer from '../../'
+import Composer from '../..'
 import { validate as mapboxStyleValidator } from '@mapbox/mapbox-gl-style-spec'
 import HeatmapGenerator, {
   HEATMAP_TYPE,
@@ -6,7 +6,7 @@ import HeatmapGenerator, {
   HEATMAP_COLOR_RAMPS,
   DEFAULT_QUANTIZE_OFFSET,
   toDays,
-} from './heatmap.js'
+} from './heatmap'
 
 const FAST_TILES_API = 'https://fst-tiles-jzzp2ui3wq-uc.a.run.app/v1/'
 const START = '2019-01-01T00:00:00.000Z'
@@ -19,8 +19,10 @@ test('returns a valid style for a simple static gridded heatmap', async () => {
   const LAYER_DEFINITION = {
     id,
     tileset: TILESET,
+    type: 'HEATMAP',
     start: START,
     end: '2019-04-01T00:00:00.000Z',
+    zoom: 1,
     visible: true,
     geomType: HEATMAP_GEOM_TYPES.GRIDDED,
     colorRamp: HEATMAP_COLOR_RAMPS.PRESENCE,
@@ -66,14 +68,14 @@ test('returns a valid style for a simple static gridded heatmap', async () => {
             ['linear'],
             ['to-number', ['get', STARTS_AT.toString()]],
             0,
-            'rgba(0, 0, 0, 0)',
+            'rgba(12, 39, 108, 0)',
             1,
-            '#0c276c',
-            3604.5999999999995,
+            'rgb(12, 39, 108)',
+            91.08999999999999,
             '#114685',
-            54006.399999999994,
+            1351.1349999999998,
             '#00ffc3',
-            104408.2,
+            2611.18,
             '#ffffff',
           ],
         },
@@ -84,7 +86,7 @@ test('returns a valid style for a simple static gridded heatmap', async () => {
         id,
         type: 'vector',
         tiles: [
-          `http://__fast_tiles__/{z}/{x}/{y}?tileset=${TILESET}&geomType=${
+          `https://__fast_tiles__/{z}/{x}/{y}?tileset=${TILESET}&geomType=${
             HEATMAP_GEOM_TYPES.GRIDDED
           }&fastTilesAPI=${encodeURIComponent(
             FAST_TILES_API

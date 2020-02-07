@@ -1,9 +1,17 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import layersDirectory from './carto-polygons-layers'
+import { GeneratorConfig, GeneratorStyles } from 'layer-composer/types'
 
 export const CARTO_POLYGONS_TYPE = 'CARTO_POLYGONS'
 export const CARTO_FISHING_MAP_API = 'https://carto.globalfishingwatch.org/user/admin/api/v1/map'
 
-const getCartoLayergroupId = async ({ id, sql, baseUrl }) => {
+interface CartoLayerOptions {
+  id: string
+  sql: string
+  baseUrl: string
+}
+const getCartoLayergroupId = async (options: CartoLayerOptions) => {
+  const { id, sql, baseUrl } = options
   const layerConfig = JSON.stringify({
     version: '1.3.0',
     stat_tag: 'API',
@@ -23,15 +31,16 @@ const getCartoLayergroupId = async ({ id, sql, baseUrl }) => {
 
 class CartoPolygonsGenerator {
   type = CARTO_POLYGONS_TYPE
-  tilesCacheByid = {}
+  tilesCacheByid: { [key: string]: any } = {}
+  baseUrl: string
 
   constructor({ baseUrl = CARTO_FISHING_MAP_API }) {
     this.baseUrl = baseUrl
   }
 
-  _getStyleSources = (layer) => {
+  _getStyleSources = (layer: GeneratorConfig) => {
     const { id } = layer
-    const layerData = layersDirectory[layer.id] || layer
+    const layerData = (layersDirectory as any)[layer.id] || layer
     const response = {
       sources: [{ id: layer.id, ...layerData.source, tiles: [''] }],
     }
@@ -64,17 +73,17 @@ class CartoPolygonsGenerator {
     }
   }
 
-  _getStyleLayers = (layer) => {
+  _getStyleLayers = (layer: GeneratorConfig) => {
     const isSourceReady = this.tilesCacheByid[layer.id] !== undefined
 
-    const layerData = layersDirectory[layer.id] || layer
-    return layerData.layers.map((glLayer) => {
+    const layerData = (layersDirectory as any)[layer.id] || layer
+    return layerData.layers.map((glLayer: any) => {
       if (!isSourceReady) return glLayer
 
       const visibility =
         layer.visible !== undefined ? (layer.visible ? 'visible' : 'none') : 'visible'
       const layout = { visibility }
-      let paint = {}
+      const paint: any = {}
       const hasSelectedFeatures =
         layer.selectedFeatures !== undefined &&
         layer.selectedFeatures.values &&
@@ -125,8 +134,8 @@ class CartoPolygonsGenerator {
     })
   }
 
-  getStyle = (layer) => {
-    const { sources, promise } = this._getStyleSources(layer)
+  getStyle = (layer: GeneratorConfig): GeneratorStyles => {
+    const { sources, promise } = this._getStyleSources(layer) as any
     return {
       id: layer.id,
       promise,

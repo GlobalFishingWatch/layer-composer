@@ -1,19 +1,20 @@
-import Pbf from 'pbf'
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { VectorTile } from '@mapbox/vector-tile'
-import geojsonhint from '@mapbox/geojsonhint'
-import validation from 'geojson-validation'
-import tilebelt from '@mapbox/tilebelt'
 import aggregate, { rawTileToIntArray } from '../aggregate'
 
+const geojsonValidation = require('geojson-validation')
+const geojsonhint = require('@mapbox/geojsonhint')
+const Pbf = require('pbf')
+const tilebelt = require('@mapbox/tilebelt')
 const fs = require('fs')
 const { performance } = require('perf_hooks')
 
 const tileset = 'carriers'
 const quantizeOffset = new Date('2017-01-01T00:00:00.000Z').getTime() / 1000 / 60 / 60 / 24 // 17167
 
-let tileRaw
+let tileRaw: any
 let tileLayer
-let arrayBuffers
+let arrayBuffers: any
 const tileBBox = tilebelt.tileToBBOX([2, 3, 2])
 
 beforeEach(() => {
@@ -59,7 +60,7 @@ test('Big tile, big delta, single frame mode, last feature', () => {
   // }
 
   const t = performance.now()
-  const agg = aggregate(bigTileArrayBuffers, {
+  const agg: any = aggregate(bigTileArrayBuffers, {
     delta: 1000,
     quantizeOffset,
     tileBBox: tilebelt.tileToBBOX([1, 1, 0]),
@@ -104,16 +105,16 @@ test('Return valid geometries/GeoJSON', () => {
   if (errors.length) {
     console.log(errors)
   }
-  expect(validation.valid(gridded)).toBe(true)
-  expect(validation.isPolygon(gridded.features[100].geometry)).toBe(true)
+  expect(geojsonValidation.valid(gridded)).toBe(true)
+  expect(geojsonValidation.isPolygon(gridded.features[100].geometry)).toBe(true)
 
   const blob = aggregate(arrayBuffers, { delta: 1, quantizeOffset, tileBBox, geomType: 'blob' })
   errors = geojsonhint.hint(blob)
   if (errors.length) {
     console.log(errors)
   }
-  expect(validation.valid(blob)).toBe(true)
-  expect(validation.isPoint(blob.features[100].geometry)).toBe(true)
+  expect(geojsonValidation.valid(blob)).toBe(true)
+  expect(geojsonValidation.isPoint(blob.features[100].geometry)).toBe(true)
 })
 
 test('Pick a value (delta 1)', () => {
@@ -131,7 +132,7 @@ test('Pick a value (delta 1)', () => {
   const testFeatureIndex = 0
   const testValueDay = 17716
 
-  const aggregated = aggregate(arrayBuffers, { delta: 1, quantizeOffset, tileBBox })
+  const aggregated: any = aggregate(arrayBuffers, { delta: 1, quantizeOffset, tileBBox })
 
   // // at 549, 1
   const testValueDayAtOffset = (testValueDay - quantizeOffset).toString()
@@ -148,7 +149,7 @@ test('Agg is correct with isolated value and long delta', () => {
   // console.log(aggregated.features[testFeatureIndex].properties)
 
   const t = performance.now()
-  const aggregated = aggregate(arrayBuffers, { delta, quantizeOffset, tileBBox })
+  const aggregated: any = aggregate(arrayBuffers, { delta, quantizeOffset, tileBBox })
   console.log('Medium Aggregation done in ', performance.now() - t)
 
   expect(aggregated.features[testFeatureIndex].properties[testValueDayAtOffset.toString()]).toBe(1)
@@ -175,7 +176,7 @@ test('Aggregates several days', () => {
   const testFeatureIndex = 906
 
   const t = performance.now()
-  const aggregated = aggregate(arrayBuffers, { delta: 3, quantizeOffset, tileBBox })
+  const aggregated: any = aggregate(arrayBuffers, { delta: 3, quantizeOffset, tileBBox })
   console.log('Small Aggregation done in ', performance.now() - t)
   const testValueDayAtOffset = testValueDay - quantizeOffset
 
@@ -426,7 +427,7 @@ test('Aggregates long time', () => {
   const testFeatureIndex = 965
 
   const t = performance.now()
-  const aggregated = aggregate(arrayBuffers, { delta: 200, quantizeOffset, tileBBox })
+  const aggregated: any = aggregate(arrayBuffers, { delta: 200, quantizeOffset, tileBBox })
   console.log('Big Aggregation done in ', performance.now() - t)
   const testValueDayAtOffset = testValueDay - quantizeOffset
 

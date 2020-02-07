@@ -1,41 +1,53 @@
-import memoizeOne from 'memoize-one'
 import flatten from 'lodash/flatten'
 import compact from 'lodash/compact'
 import debounce from 'lodash/debounce'
 import zip from 'lodash/zip'
+import { GeneratorConfig } from 'layer-composer/types'
+import { HeatmapGeoms } from 'fourwings-worker/types'
 import paintByGeomType from './heatmap-layers-paint'
+import memoizeOne from 'memoize-one'
 
 export const HEATMAP_TYPE = 'HEATMAP'
-
 const FAST_TILES_KEY = '__fast_tiles__'
 const DEFAULT_FAST_TILES_API = 'https://fst-tiles-jzzp2ui3wq-uc.a.run.app/v1/'
 const BASE_WORKER_URL = `https://${FAST_TILES_KEY}/{z}/{x}/{y}`
 
-export const toDays = (d) => {
-  return Math.floor(new Date(d).getTime() / 1000 / 60 / 60 / 24)
+export const toDays = (date: string) => {
+  return Math.floor(new Date(date).getTime() / 1000 / 60 / 60 / 24)
 }
 
 export const DEFAULT_QUANTIZE_OFFSET = toDays('2019-01-01T00:00:00.000Z')
 
-export const HEATMAP_GEOM_TYPES = {
+export const HEATMAP_GEOM_TYPES: HeatmapGeoms = {
   BLOB: 'blob',
   GRIDDED: 'gridded',
   EXTRUDED: 'extruded',
 }
 
-export const HEATMAP_GEOM_TYPES_GL_TYPES = {
+export type GeomGl = 'heatmap' | 'fill' | 'fill-extrusion'
+export type HeatmapGeomGL = {
+  [key: string]: GeomGl
+}
+export const HEATMAP_GEOM_TYPES_GL_TYPES: HeatmapGeomGL = {
   [HEATMAP_GEOM_TYPES.BLOB]: 'heatmap',
   [HEATMAP_GEOM_TYPES.GRIDDED]: 'fill',
   [HEATMAP_GEOM_TYPES.EXTRUDED]: 'fill-extrusion',
 }
 
-export const HEATMAP_COLOR_RAMPS = {
+export type ColorRamps = 'fishing' | 'presence' | 'reception'
+export type HeatmapColorRamp = {
+  [key: string]: ColorRamps
+}
+export const HEATMAP_COLOR_RAMPS: HeatmapColorRamp = {
   FISHING: 'fishing',
   PRESENCE: 'presence',
   RECEPTION: 'reception',
 }
 
-const HEATMAP_COLOR_RAMPS_RAMPS = {
+export type HeatmapColorRampColors = {
+  [key in string]: string[]
+}
+const HEATMAP_COLOR_RAMPS_RAMPS: HeatmapColorRampColors = {
   [HEATMAP_COLOR_RAMPS.FISHING]: [
     'rgba(12, 39, 108, 0)',
     'rgb(12, 39, 108)',
@@ -62,12 +74,12 @@ const HEATMAP_COLOR_RAMPS_RAMPS = {
 // TODO this can yield different deltas depending even when start and end stays equally further apart:
 //  improve logic or throttle
 // TODO should work also with hours
-const getDelta = (start, end) => {
+const getDelta = (start: string, end: string) => {
   const startTimestampMs = new Date(start).getTime()
   const endTimestampMs = new Date(end).getTime()
   const startTimestampDays = startTimestampMs / 1000 / 60 / 60 / 24
   const endTimestampDays = endTimestampMs / 1000 / 60 / 60 / 24
-  let daysDelta = Math.round(endTimestampDays - startTimestampDays)
+  const daysDelta = Math.round(endTimestampDays - startTimestampDays)
   return daysDelta
 }
 
@@ -75,14 +87,18 @@ const getDelta = (start, end) => {
 // const quantizeOffset = DEFAULT_QUANTIZE_OFFSET
 
 // TODO for now only works in days
-const toQuantizedDays = (d, quantizeOffset) => {
-  const days = toDays(d)
+const toQuantizedDays = (date: string, quantizeOffset: number) => {
+  const days = toDays(date)
   return days - quantizeOffset
 }
 
 class HeatmapGenerator {
   type = HEATMAP_TYPE
   loadingStats = false
+  fastTilesAPI: string
+  quantizeOffset = 0
+  currentSetDeltaDebounced: any
+  delta = 0
   stats = {
     max: 30,
     min: 1,
@@ -93,7 +109,12 @@ class HeatmapGenerator {
     this.fastTilesAPI = fastTilesAPI
   }
 
-  _getServerSideFilters = (serverSideFilter, start, end, useStartAndEnd) => {
+  _getServerSideFilters = (
+    serverSideFilter = '',
+    start: string,
+    end: string,
+    useStartAndEnd = false
+  ) => {
     const serverSideFiltersList = []
 
     if (serverSideFilter) {
@@ -108,7 +129,7 @@ class HeatmapGenerator {
     return serverSideFilters
   }
 
-  _fetchStats = memoizeOne((endpoint, tileset, zoom, serverSideFilters) => {
+  _fetchStats = memoizeOne((endpoint: any, tileset: any, zoom: any, serverSideFilters: any) => {
     this.loadingStats = true
     const statsUrl = new URL(`${endpoint}${tileset}/statistics/${zoom}`)
     if (serverSideFilters) {
@@ -131,9 +152,11 @@ class HeatmapGenerator {
       })
   })
 
-  _getStyleSources = (layer) => {
+  _getStyleSources = (layer: GeneratorConfig) => {
     if (!layer.start || !layer.end || !layer.tileset) {
-      throw new Error('Heatmap generator must specify start, end and tileset parameters', layer)
+      throw new Error(
+        `Heatmap generator must specify start, end and tileset parameters in ${layer}`
+      )
     }
     const geomType = layer.geomType || HEATMAP_GEOM_TYPES.GRIDDED
 
@@ -141,11 +164,11 @@ class HeatmapGenerator {
     url.searchParams.set('tileset', layer.tileset)
     url.searchParams.set('geomType', geomType)
     url.searchParams.set('fastTilesAPI', this.fastTilesAPI)
-    url.searchParams.set('quantizeOffset', this.quantizeOffset)
-    url.searchParams.set('delta', this.delta)
+    url.searchParams.set('quantizeOffset', this.quantizeOffset.toString())
+    url.searchParams.set('delta', this.delta.toString())
 
     if (layer.singleFrame === true) {
-      url.searchParams.set('singleFrame', layer.singleFrame)
+      url.searchParams.set('singleFrame', layer.singleFrame.toString())
       url.searchParams.set('start', layer.start)
     }
 
@@ -163,13 +186,13 @@ class HeatmapGenerator {
     return [
       {
         id: layer.id,
-        type: 'vector',
+        type: 'vector' as const,
         tiles: [decodeURI(url.toString())],
       },
     ]
   }
 
-  _getHeatmapLayers = (layer) => {
+  _getHeatmapLayers = (layer: GeneratorConfig) => {
     const geomType = layer.geomType || HEATMAP_GEOM_TYPES.GRIDDED
     const colorRampType = layer.colorRamp || HEATMAP_COLOR_RAMPS.PRESENCE
     const colorRampMult = layer.colorRampMult || 1
@@ -193,7 +216,7 @@ class HeatmapGenerator {
       this.stats.min + maxOffseted * overallMult,
     ]
 
-    const originalColorRamp = HEATMAP_COLOR_RAMPS_RAMPS[colorRampType]
+    const originalColorRamp = HEATMAP_COLOR_RAMPS_RAMPS[colorRampType as any]
     let legend = zip(stops, originalColorRamp)
 
     const colorRampValues = flatten(legend)
@@ -203,14 +226,14 @@ class HeatmapGenerator {
 
     const valueExpression = ['to-number', ['get', pickValueAt]]
     const colorRamp = ['interpolate', ['linear'], valueExpression, ...colorRampValues]
-    const paint = { ...paintByGeomType[geomType] }
+    const paint = { ...(paintByGeomType as any)[geomType] }
     switch (geomType) {
       case HEATMAP_GEOM_TYPES.GRIDDED:
         paint['fill-color'] = colorRamp
         break
       case HEATMAP_GEOM_TYPES.EXTRUDED:
         paint['fill-extrusion-color'] = colorRamp
-        const zoomFactor = 1 / Math.ceil(layer.zoom)
+        const zoomFactor = layer.zoom ? 1 / Math.ceil(layer.zoom) : 1
         const extrusionHeightRamp = flatten(
           zip(stops, [
             0,
@@ -245,20 +268,21 @@ class HeatmapGenerator {
     }
 
     // 'desactivate' legend values that are similar
-    let prevValidValue
+    let prevValidValue: number | null
     legend = legend.map(([value, color], i) => {
       let rdFn = Math.round
       if (i === 0) rdFn = Math.floor
       if (i === 4) rdFn = Math.ceil
-      let finalValue = rdFn(value)
+      let finalValue = value ? rdFn(value) : 0
       if (i > 0 && prevValidValue === finalValue) {
-        finalValue = null
+        finalValue = 0
       } else {
         prevValidValue = finalValue
       }
       return [finalValue, color]
     })
 
+    const visibility: 'visible' | 'none' = layer && layer.visible ? 'visible' : 'none'
     return [
       {
         id: layer.id,
@@ -266,7 +290,7 @@ class HeatmapGenerator {
         'source-layer': layer.tileset,
         type: HEATMAP_GEOM_TYPES_GL_TYPES[geomType],
         layout: {
-          visibility: layer.visible === false ? 'none' : 'visible',
+          visibility,
         },
         paint,
         metadata: {
@@ -277,7 +301,7 @@ class HeatmapGenerator {
     ]
   }
 
-  _getStyleLayers = (layer) => {
+  _getStyleLayers = (layer: GeneratorConfig) => {
     if (layer.fetchStats !== true) {
       return { layers: this._getHeatmapLayers(layer) }
     }
@@ -309,7 +333,7 @@ class HeatmapGenerator {
     return { layers, promise }
   }
 
-  _updateDelta = (layer) => {
+  _updateDelta = (layer: GeneratorConfig) => {
     const newDelta = getDelta(layer.start, layer.end)
     if (newDelta === this.delta) return null
 
@@ -327,16 +351,16 @@ class HeatmapGenerator {
   }
   _setDelta = debounce(this._updateDelta, 1000)
 
-  getStyle = (layer) => {
+  getStyle = (layer: GeneratorConfig) => {
     if (!this.delta) {
       this.delta = getDelta(layer.start, layer.end)
     }
     this.quantizeOffset = layer.quantizeOffset || DEFAULT_QUANTIZE_OFFSET
     if (layer.singleFrame === true) {
-      this.quantizeOffset = layer.start
+      this.quantizeOffset = layer.start as any
     }
     const { layers, promise } = this._getStyleLayers(layer)
-    const deltaPromise = this._updateDelta(layer)
+    const deltaPromise: any = this._updateDelta(layer)
     const promises = compact([promise, deltaPromise])
     return {
       id: layer.id,
