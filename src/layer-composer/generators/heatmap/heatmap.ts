@@ -17,6 +17,22 @@ export const toDays = (date: string) => {
   return Math.floor(new Date(date).getTime() / 1000 / 60 / 60 / 24)
 }
 
+export interface HeatmapGeneratorConfig extends GeneratorConfig {
+  start: string
+  end: string
+  zoom: number
+  delta?: number
+  tileset: string
+  geomType: string
+  singleFrame?: boolean
+  fetchStats?: boolean
+  serverSideFilter?: string
+  updateColorRampOnTimeChange?: boolean
+  quantizeOffset?: number
+  colorRamp: ColorRamps
+  colorRampMult: number
+}
+
 export const DEFAULT_QUANTIZE_OFFSET = toDays('2019-01-01T00:00:00.000Z')
 
 export const HEATMAP_GEOM_TYPES: HeatmapGeoms = {
@@ -153,7 +169,7 @@ class HeatmapGenerator {
       })
   })
 
-  _getStyleSources = (layer: GeneratorConfig) => {
+  _getStyleSources = (layer: HeatmapGeneratorConfig) => {
     if (!layer.start || !layer.end || !layer.tileset) {
       throw new Error(
         `Heatmap generator must specify start, end and tileset parameters in ${layer}`
@@ -193,7 +209,7 @@ class HeatmapGenerator {
     ]
   }
 
-  _getHeatmapLayers = (layer: GeneratorConfig) => {
+  _getHeatmapLayers = (layer: HeatmapGeneratorConfig) => {
     const geomType = layer.geomType || HEATMAP_GEOM_TYPES.GRIDDED
     const colorRampType = layer.colorRamp || HEATMAP_COLOR_RAMPS.PRESENCE
     const colorRampMult = layer.colorRampMult || 1
@@ -303,7 +319,7 @@ class HeatmapGenerator {
     ]
   }
 
-  _getStyleLayers = (layer: GeneratorConfig) => {
+  _getStyleLayers = (layer: HeatmapGeneratorConfig) => {
     if (layer.fetchStats !== true) {
       return { layers: this._getHeatmapLayers(layer) }
     }
@@ -335,7 +351,7 @@ class HeatmapGenerator {
     return { layers, promise }
   }
 
-  _updateDelta = (layer: GeneratorConfig) => {
+  _updateDelta = (layer: HeatmapGeneratorConfig) => {
     const newDelta = getDelta(layer.start, layer.end)
     if (newDelta === this.delta) return null
 
@@ -353,7 +369,7 @@ class HeatmapGenerator {
   }
   _setDelta = debounce(this._updateDelta, 1000)
 
-  getStyle = (layer: GeneratorConfig) => {
+  getStyle = (layer: HeatmapGeneratorConfig) => {
     if (!this.delta) {
       this.delta = getDelta(layer.start, layer.end)
     }

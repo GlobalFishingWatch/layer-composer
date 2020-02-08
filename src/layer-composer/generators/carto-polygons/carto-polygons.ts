@@ -10,6 +10,17 @@ interface CartoLayerOptions {
   sql: string
   baseUrl: string
 }
+
+export interface CartoPolygonsGeneratorConfig extends GeneratorConfig {
+  baseUrl?: string
+  selectedFeatures?: any
+  color?: string
+  fillColor?: any
+  strokeColor?: string
+  strokeWidth?: number
+  radius?: number
+}
+
 const getCartoLayergroupId = async (options: CartoLayerOptions) => {
   const { id, sql, baseUrl } = options
   const layerConfig = JSON.stringify({
@@ -38,7 +49,7 @@ class CartoPolygonsGenerator {
     this.baseUrl = baseUrl
   }
 
-  _getStyleSources = (layer: GeneratorConfig) => {
+  _getStyleSources = (layer: CartoPolygonsGeneratorConfig) => {
     const { id } = layer
     const layerData = (layersDirectory as any)[layer.id] || layer
     const response = {
@@ -73,7 +84,7 @@ class CartoPolygonsGenerator {
     }
   }
 
-  _getStyleLayers = (layer: GeneratorConfig) => {
+  _getStyleLayers = (layer: CartoPolygonsGeneratorConfig) => {
     const isSourceReady = this.tilesCacheByid[layer.id] !== undefined
 
     const layerData = (layersDirectory as any)[layer.id] || layer
@@ -134,7 +145,7 @@ class CartoPolygonsGenerator {
     })
   }
 
-  getStyle = (layer: GeneratorConfig): GeneratorStyles => {
+  getStyle = (layer: CartoPolygonsGeneratorConfig): GeneratorStyles => {
     const { sources, promise } = this._getStyleSources(layer) as any
     return {
       id: layer.id,

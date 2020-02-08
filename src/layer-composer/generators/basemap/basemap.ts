@@ -1,30 +1,31 @@
-import layersDirectory from './basemap-layers'
-import { GeneratorConfig } from 'layer-composer/types'
+import { GeneratorConfig, GeneratorStyles } from 'layer-composer/types'
+import { layers, sources } from './basemap-layers'
 
 export const BASEMAP_TYPE = 'BASEMAP'
+
+// export interface BasemapGeneratorConfig extends GeneratorConfig {
+//   basemapType?: string
+// }
 
 class BasemapGenerator {
   type = BASEMAP_TYPE
 
-  _getStyleSources = (layer: GeneratorConfig) => {
-    const { id, attribution } = layer
-    const source = {
-      ...layer.source,
-      ...((layersDirectory as any)[id] && (layersDirectory as any)[id].source),
-      ...(attribution && { attribution }),
-    }
-    return [{ id, ...source }]
+  _getStyleSources = (config: GeneratorConfig) => {
+    const layer = layers[config.id]
+    const sourceId = layer.source as string
+    const source = sources[sourceId]
+    return [{ id: sourceId, ...source }]
   }
-  _getStyleLayers = (layer: GeneratorConfig) => {
-    const layerData = (layersDirectory as any)[layer.id]
-    return layerData !== undefined ? layerData.layers : []
+  _getStyleLayers = (config: GeneratorConfig) => {
+    const layer = layers[config.id]
+    return [layer]
   }
 
-  getStyle = (layer: GeneratorConfig) => {
+  getStyle = (config: GeneratorConfig) => {
     return {
-      id: layer.id,
-      sources: this._getStyleSources(layer),
-      layers: this._getStyleLayers(layer),
+      id: config.id,
+      sources: this._getStyleSources(config),
+      layers: this._getStyleLayers(config),
     }
   }
 }

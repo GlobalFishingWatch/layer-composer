@@ -4,6 +4,10 @@ import { GeneratorConfig } from 'layer-composer/types'
 
 export const BACKGROUND_TYPE = 'BACKGROUND'
 
+export interface BackgroundGeneratorConfig extends GeneratorConfig {
+  color?: string
+}
+
 interface BackgroundLayer extends ExtendedLayer {
   type: 'background'
   layout: BackgroundLayout
@@ -13,7 +17,7 @@ interface BackgroundLayer extends ExtendedLayer {
 class BackgroundGenerator {
   type = BACKGROUND_TYPE
 
-  _getStyleLayers = (layer: GeneratorConfig): BackgroundLayer[] => [
+  _getStyleLayers = (layer: BackgroundGeneratorConfig): BackgroundLayer[] => [
     {
       id: 'background',
       type: 'background',
@@ -29,7 +33,7 @@ class BackgroundGenerator {
     },
   ]
 
-  getStyle = (layer: GeneratorConfig) => {
+  getStyle = (layer: BackgroundGeneratorConfig) => {
     return {
       id: layer.id,
       sources: [],
