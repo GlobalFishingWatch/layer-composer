@@ -1,16 +1,13 @@
+import { BackgroundPaint, BackgroundLayout } from 'mapbox-gl'
+import { ExtendedLayer, Group } from '../../../types/types'
 import { GeneratorConfig } from 'layer-composer/types'
 
 export const BACKGROUND_TYPE = 'BACKGROUND'
 
-interface BackgroundLayer {
-  id: string
+interface BackgroundLayer extends ExtendedLayer {
   type: 'background'
-  layout: {
-    visibility: 'visible' | 'none'
-  }
-  paint: {
-    'background-color': string
-  }
+  layout: BackgroundLayout
+  paint: BackgroundPaint
 }
 
 class BackgroundGenerator {
@@ -25,6 +22,9 @@ class BackgroundGenerator {
       },
       paint: {
         'background-color': layer.color || '#001436',
+      },
+      metadata: {
+        group: Group.Background,
       },
     },
   ]
