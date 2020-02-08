@@ -1,5 +1,5 @@
 import { BackgroundPaint, BackgroundLayout } from 'mapbox-gl'
-import { ExtendedLayer, Group } from '../../../types/types'
+import { ExtendedLayer, Group } from '../../../types'
 import { GeneratorConfig } from 'layer-composer/types'
 
 export const BACKGROUND_TYPE = 'BACKGROUND'
