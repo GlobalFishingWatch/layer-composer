@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 
-import { Group } from '../../../types/types'
+import { Group } from '../../../types'
 
 export default {
   cp_rfmo: {

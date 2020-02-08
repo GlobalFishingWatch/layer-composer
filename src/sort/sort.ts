@@ -1,5 +1,5 @@
 import { Style, Layer } from 'mapbox-gl'
-import { Dictionary, ExtendedStyle, ExtendedLayer, Group } from '../types/types'
+import { Dictionary, ExtendedStyle, ExtendedLayer, Group } from '../types'
 
 const GROUP_ORDER = [
   Group.Background,
