@@ -20,6 +20,7 @@ export enum Group {
   Background = 'background', // Solid bg color
   Basemap = 'basemap', // Satellite tiles
   Heatmap = 'heatmap', // Fill/gradient-based heatmaps
+  BasemapFill = 'basemapFill', // Landmass
   OutlinePolygons = 'outlinePolygons', // Conbtext layers with an outlined/hollow style such as EEZ, RFMOs, etc
   Default = 'default', // Default stack position when f0roup is not specified
   Point = 'point', // Events, etc
