@@ -111,7 +111,7 @@ interface CurrentFeature {
   type: 'Feature'
   properties: {
     value?: number
-    presence?: string
+    info?: string
   }
   geometry: any
 }
@@ -138,7 +138,7 @@ const aggregate = (arrayBuffer: any, options: any) => {
     type: 'Feature',
     properties: {
       value: 0,
-      presence: '',
+      info: '',
     },
     geometry: {},
   }
@@ -233,8 +233,8 @@ const aggregate = (arrayBuffer: any, options: any) => {
 
     if (isEndOfFeature) {
       writeFinalTail()
-      currentFeature.properties.presence = Object.values(currentFeature.properties)
-        .map((v) => `hello${v}`)
+      currentFeature.properties.info = Object.values(currentFeature.properties)
+        .map((v) => `${v}`)
         .join(',')
       features.push(currentFeature)
       currentFeature = {
