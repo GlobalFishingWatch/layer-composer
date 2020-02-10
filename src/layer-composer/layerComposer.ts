@@ -52,9 +52,11 @@ class LayerComposer {
   // Uses generators to return the layer with sources and layers
   _getGeneratedLayer = (layer: GeneratorConfig) => {
     if (!this.generators[layer.type]) {
-      throw new Error(`There is no styleLayer generator loaded for the layer: ${layer}}`)
+      throw new Error(`There is no generator loaded for the layer: ${layer}}`)
     }
-    return this.generators[layer.type].getStyle(layer)
+    const generator = this.generators[layer.type]
+    const generatorStyles = generator.getStyle(layer)
+    return generatorStyles
   }
 
   // Latest step in the workflow which compose the output needed for mapbox-gl

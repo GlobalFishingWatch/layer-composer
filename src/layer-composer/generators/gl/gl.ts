@@ -2,14 +2,19 @@ import { GeneratorConfig } from 'layer-composer/types'
 
 export const GL_TYPE = 'GL_STYLES'
 
+export interface GlGeneratorConfig extends GeneratorConfig {
+  sources?: any
+  layers?: any
+}
+
 class GlStyleGenerator {
   type = GL_TYPE
 
-  _getStyleSources = (layer: GeneratorConfig) => {
+  _getStyleSources = (layer: GlGeneratorConfig) => {
     return layer.sources.map((glSource: any) => ({ id: `${layer.id}`, ...glSource }))
   }
 
-  _getStyleLayers = (layer: GeneratorConfig) => {
+  _getStyleLayers = (layer: GlGeneratorConfig) => {
     const layout = {
       visibility: layer.visible !== undefined ? (layer.visible ? 'visible' : 'none') : 'visible',
     }
@@ -24,7 +29,7 @@ class GlStyleGenerator {
     }))
   }
 
-  getStyle = (layer: GeneratorConfig) => {
+  getStyle = (layer: GlGeneratorConfig) => {
     return {
       id: layer.id,
       // Auto generates sources and glLayers id using layer id when neccesary
