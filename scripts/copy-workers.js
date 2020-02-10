@@ -2,9 +2,9 @@
 
 // This is meant to be executed at parent project level
 // ie add to your parent project package.json scripts:
-// "copy-workers": "./node_modules/@globalfishingwatch/map-styler/scripts/copy-workers.js"
+// "copy-workers": "./node_modules/@globalfishingwatch/mlayer-composer/scripts/copy-workers.js"
 // or
-// "copy-workers:watch": "./node_modules/@globalfishingwatch/map-styler/scripts/copy-workers.js --watch"
+// "copy-workers:watch": "./node_modules/@globalfishingwatch/mlayer-composer/scripts/copy-workers.js --watch"
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 const fs = require('fs')

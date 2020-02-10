@@ -1,18 +1,18 @@
 {
-  "name": "@globalfishingwatch/map-styler",
+  "name": "@globalfishingwatch/layer-composer",
   "version": "0.0.4",
   "description": "Tools to convert layer configuration to data structures needed in Mapbox GL GFW interactive maps ",
   "keywords": [
     "mapboxgl",
     "globalfishingwatch"
   ],
-  "libraryName": "map-styler",
+  "libraryName": "layer-composer",
   "workerName": "fourwings-worker",
-  "main": "dist/map-styler.umd.js",
-  "module": "dist/map-styler.esm.js",
-  "typings": "dist/types/map-styler.d.ts",
+  "main": "dist/layer-composer.umd.js",
+  "module": "dist/layer-composer.esm.js",
+  "typings": "dist/types/layer-composer.d.ts",
   "author": "@satellitestudio<contact@satellitestud.io>",
-  "repository": "git@github.com:GlobalFishingWatch/map-styler.git",
+  "repository": "git@github.com:GlobalFishingWatch/layer-composer.git",
   "license": "GPL-3.0-or-later",
   "engines": {
     "node": ">=6.0.0"

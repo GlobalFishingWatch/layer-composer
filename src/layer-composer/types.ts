@@ -6,7 +6,7 @@ export interface LayerComposerStyles {
 }
 
 export interface LayerComposerOptions {
-  generators?: { [key: string]: Generator }
+  generators?: { [key: string]: any }
   version?: number
   glyphs?: string
   sprite?: string

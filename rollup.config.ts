@@ -25,7 +25,7 @@ const workerConfig = {
 }
 
 const libConfig = {
-  input: `src/${libraryName}.ts`,
+  input: `src/index.ts`,
   output: [
     {
       file: pkg.main,
