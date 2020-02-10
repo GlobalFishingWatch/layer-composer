@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+// This is used to serve tiles locally for testing purposes
+
 const path = require('path')
 const express = require('express')
 const app = express()

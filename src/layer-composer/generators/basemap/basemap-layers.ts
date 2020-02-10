@@ -22,7 +22,7 @@ export const layers: Dictionary<Layer> = {
     type: 'fill',
     id: BASEMAPS.Landmass,
     source: BASEMAP_VECTOR_SOURCE,
-    'source-layer': 'landmass',
+    'source-layer': BASEMAPS.Landmass,
     metadata: {
       group: Group.BasemapFill,
     },
@@ -67,7 +67,7 @@ export const sources: Dictionary<AnySourceImpl> = {
   },
   [BASEMAP_VECTOR_SOURCE]: {
     type: 'vector',
-    tiles: ['http://localhost:9090/tiles-basemap/{z}/{x}/{y}.pbf'],
+    tiles: ['https://storage.googleapis.com/public-tiles/tiles-basemap/{z}/{x}/{y}.pbf'],
     maxzoom: 8,
   },
 }
