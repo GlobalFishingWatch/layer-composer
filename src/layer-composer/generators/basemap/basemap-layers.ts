@@ -28,7 +28,6 @@ export const layers: Dictionary<Layer> = {
     },
     paint: {
       'fill-color': '#374A6D',
-      'fill-outline-color': 'white',
       'fill-opacity': 0.99,
     },
   },
@@ -45,8 +44,8 @@ export const layers: Dictionary<Layer> = {
       'line-opacity': {
         base: 1,
         stops: [
-          [0, 0.7],
-          [8, 0.7],
+          [0, 0.1],
+          [8, 0.2],
           [9, 0.2],
         ],
       },
