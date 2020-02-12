@@ -222,7 +222,7 @@ class HeatmapGenerator {
     const medianMaxOffsetedValue = medianOffseted + (maxOffseted - medianOffseted) / 2
     const stops = [
       // probably always start at 0 (black alpha)
-      0,
+      Math.min(this.stats.min - 0.001, 0),
       // first meaningful value = use minimum value in stats
       this.stats.min,
       // next step = use median value in stats
