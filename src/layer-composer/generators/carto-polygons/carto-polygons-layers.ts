@@ -20,6 +20,23 @@ export default {
       },
     ],
   },
+  sprfmo: {
+    source: {
+      sql: 'SELECT the_geom, the_geom_webmercator, cartodb_id as id FROM sprfmo',
+      type: 'vector',
+    },
+    layers: [
+      {
+        id: 'sprfmo',
+        type: 'fill',
+        source: 'sprfmo',
+        'source-layer': 'sprfmo',
+        metadata: {
+          group: Group.OutlinePolygons,
+        },
+      },
+    ],
+  },
   mpant: {
     source: {
       sql: 'select * FROM wdpa_no_take_mpas',
