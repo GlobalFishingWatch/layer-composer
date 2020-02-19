@@ -25,7 +25,7 @@ const workerConfig = {
 }
 
 const libConfig = {
-  input: `src/index.ts`,
+  input: 'src/index.ts',
   output: [
     {
       file: pkg.main,
