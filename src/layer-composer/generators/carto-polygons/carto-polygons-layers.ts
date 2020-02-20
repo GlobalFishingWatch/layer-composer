@@ -20,6 +20,23 @@ export default {
       },
     ],
   },
+  sprfmo: {
+    source: {
+      sql: 'SELECT the_geom, the_geom_webmercator, cartodb_id as id FROM sprfmo',
+      type: 'vector',
+    },
+    layers: [
+      {
+        id: 'sprfmo',
+        type: 'fill',
+        source: 'sprfmo',
+        'source-layer': 'sprfmo',
+        metadata: {
+          group: Group.OutlinePolygons,
+        },
+      },
+    ],
+  },
   mpant: {
     source: {
       sql: 'select * FROM wdpa_no_take_mpas',
@@ -55,7 +72,7 @@ export default {
   eez: {
     source: {
       sql:
-        "SELECT cartodb_id, the_geom, the_geom_webmercator, geoname as name, 'eez:' || mrgid as region_id, geoname as reporting_name, 'eez:' || mrgid as reporting_id FROM eez",
+        "SELECT cartodb_id, CAST (mrgid AS TEXT) as id, the_geom, the_geom_webmercator, geoname as name, 'eez:' || mrgid as region_id, geoname as reporting_name, 'eez:' || mrgid as reporting_id FROM eez",
       type: 'vector',
       attribution: 'EEZs: marineregions.org',
     },

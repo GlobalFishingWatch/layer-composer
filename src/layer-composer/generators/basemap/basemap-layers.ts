@@ -27,7 +27,7 @@ export const layers: Dictionary<Layer> = {
       group: Group.BasemapFill,
     },
     paint: {
-      'fill-color': '#374A6D',
+      'fill-color': '#001436',
       'fill-opacity': 0.99,
     },
   },
@@ -37,7 +37,7 @@ export const layers: Dictionary<Layer> = {
     source: BASEMAP_VECTOR_SOURCE,
     'source-layer': 'graticules',
     metadata: {
-      group: Group.BasemapForeground,
+      group: Group.Basemap,
     },
     paint: {
       'line-color': '#ffffff',

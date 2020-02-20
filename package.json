@@ -1,6 +1,6 @@
 {
   "name": "@globalfishingwatch/layer-composer",
-  "version": "0.1.2",
+  "version": "0.1.6",
   "description": "Tools to convert layer configuration to data structures needed in Mapbox GL GFW interactive maps ",
   "keywords": [
     "mapboxgl",
@@ -25,7 +25,12 @@
     "lint": "eslint -c .eslintrc src/**/*.ts test/*.ts --fix",
     "prebuild": "rimraf ./dist/*",
     "build": "cross-env NODE_ENV=production tsc --module commonjs && rollup -c rollup.config.ts",
-    "prepublish": "npm run build"
+    "typedoc": "typedoc --out docs --target es6 --theme minimal --mode file src",
+    "gh-pages": "gh-pages -d docs",
+    "release:minor": "release minor",
+    "release:patch": "release patch",
+    "prepublish": "npm run build",
+    "publishdoc": "npm run typedoc && npm run gh-pages"
   },
   "husky": {
     "hooks": {
@@ -84,6 +89,7 @@
     "lodash-es": "^4.17.15",
     "prettier": "^1.19.1",
     "react": "^16.12.0",
+    "release": "^6.1.0",
     "rollup": "^1.29.0",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-json": "^4.0.0",
