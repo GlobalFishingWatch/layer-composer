@@ -5,6 +5,7 @@ import {
   LayerComposerOptions,
   GeneratorStyles,
   GeneratorConfig,
+  GlobalGeneratorConfig,
 } from './types'
 
 export const DEFAULT_CONFIG = {
@@ -20,6 +21,7 @@ class LayerComposer {
   sprite: string
   generators: { [key: string]: any }
   latestGenerated: any
+  globalGeneratorConfig: GlobalGeneratorConfig
 
   constructor(params?: LayerComposerOptions) {
     this.version = (params && params.version) || DEFAULT_CONFIG.version
@@ -29,6 +31,8 @@ class LayerComposer {
 
     // Used to cache results and always return the latest style in promises
     this.latestGenerated = {}
+
+    this.globalGeneratorConfig = {}
   }
 
   // Sources dictionary for id and array of sources per layer
@@ -49,13 +53,28 @@ class LayerComposer {
     )
   }
 
+  _applyGenericStyle = (generatorConfig: GeneratorConfig, generatorStyles: GeneratorStyles) => {
+    const newGeneratorStyles = { ...generatorStyles }
+    newGeneratorStyles.layers = newGeneratorStyles.layers.map((layer) => {
+      const newLayer = { ...layer }
+      if (generatorConfig.visible !== undefined && generatorConfig.visible !== null) {
+        if (!newLayer.layout) {
+          newLayer.layout = {}
+        }
+        newLayer.layout.visibility = generatorConfig.visible === true ? 'visible' : 'none'
+      }
+      return newLayer
+    })
+    return newGeneratorStyles
+  }
+
   // Uses generators to return the layer with sources and layers
   _getGeneratedLayer = (layer: GeneratorConfig) => {
     if (!this.generators[layer.type]) {
       throw new Error(`There is no generator loaded for the layer: ${layer}}`)
     }
     const generator = this.generators[layer.type]
-    const generatorStyles = generator.getStyle(layer)
+    const generatorStyles = this._applyGenericStyle(layer, generator.getStyle(layer))
     return generatorStyles
   }
 
@@ -71,11 +90,16 @@ class LayerComposer {
   }
 
   // Main mathod of the library which uses the privates one to compose the style
-  getGLStyle = (layers: GeneratorConfig[]): LayerComposerStyles => {
+  getGLStyle = (
+    layers: GeneratorConfig[],
+    globalGeneratorConfig: GlobalGeneratorConfig = {}
+  ): LayerComposerStyles => {
     if (!layers) {
       console.warn('No layers passed to layer manager')
       return { style: this._getStyleJson() }
     }
+
+    this.globalGeneratorConfig = globalGeneratorConfig
 
     let layersPromises: Promise<GeneratorStyles>[] = []
     const layersGenerated = layers.map((layer) => {

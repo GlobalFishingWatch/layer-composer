@@ -33,3 +33,8 @@ export interface GeneratorConfig {
   visible?: boolean
   opacity?: number
 }
+
+export interface GlobalGeneratorConfig {
+  start?: string
+  end?: string
+}
