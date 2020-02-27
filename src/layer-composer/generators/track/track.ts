@@ -2,6 +2,7 @@ import { GeneratorConfig } from 'layer-composer/types'
 // TODO custom "augemented" GeoJSON type
 // see https://github.com/yagajs/generic-geojson/blob/master/index.d.ts
 import { FeatureCollection } from 'geojson'
+import filterGeoJSONByTimerange from './filterGeoJSONByTimerange'
 
 export const TRACK_TYPE = 'TRACK'
 
@@ -14,15 +15,32 @@ class TrackGenerator {
   type = TRACK_TYPE
 
   _getStyleSources = (config: TrackGeneratorConfig) => {
-    const source = {
-      type: 'geojson',
-      data: config.data || {
-        type: 'FeatureCollection',
-        features: [],
-      },
+    const defaultGeoJSON: FeatureCollection = {
+      type: 'FeatureCollection',
+      features: [],
     }
-    return [{ id: config.id, ...source }]
+    const source = {
+      id: config.id,
+      type: 'geojson',
+      data: defaultGeoJSON,
+    }
+    if (!config.data) {
+      return [source]
+    }
+
+    if (!config.start || !config.end) {
+      source.data = config.data as FeatureCollection
+      return [source]
+    }
+
+    const startMs = new Date(config.start).getTime()
+    const endMs = new Date(config.end).getTime()
+
+    const filteredData = filterGeoJSONByTimerange(config.data, startMs, endMs)
+    source.data = filteredData
+    return [source]
   }
+
   _getStyleLayers = (config: TrackGeneratorConfig) => {
     const layer = {
       type: 'line',
