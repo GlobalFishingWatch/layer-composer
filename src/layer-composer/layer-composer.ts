@@ -36,7 +36,7 @@ class LayerComposer {
   }
 
   // Sources dictionary for id and array of sources per layer
-  _getGeneratedLayerSource = (layers: GeneratorStyles[]) => {
+  _getGeneratorSources = (layers: GeneratorStyles[]) => {
     return Object.fromEntries(
       layers
         .filter((layer) => layer.sources && layer.sources.length)
@@ -45,7 +45,7 @@ class LayerComposer {
   }
 
   // Same here for layers
-  _getGeneratedLayerLayers = (layers: GeneratorStyles[]) => {
+  _getGeneratorLayers = (layers: GeneratorStyles[]) => {
     return Object.fromEntries(
       layers
         .filter((layer) => layer.layers && layer.layers.length)
@@ -53,7 +53,11 @@ class LayerComposer {
     )
   }
 
-  _applyGenericStyle = (generatorConfig: GeneratorConfig, generatorStyles: GeneratorStyles) => {
+  // apply generic config to all generator layers
+  _applyGenericStyle = (
+    generatorConfig: GeneratorConfig,
+    generatorStyles: GeneratorStyles
+  ): GeneratorStyles => {
     const newGeneratorStyles = { ...generatorStyles }
     newGeneratorStyles.layers = newGeneratorStyles.layers.map((layer) => {
       const newLayer = { ...layer }
@@ -69,12 +73,19 @@ class LayerComposer {
   }
 
   // Uses generators to return the layer with sources and layers
-  _getGeneratedLayer = (layer: GeneratorConfig) => {
-    if (!this.generators[layer.type]) {
-      throw new Error(`There is no generator loaded for the layer: ${layer}}`)
+  _getGeneratorStyles = (
+    config: GeneratorConfig,
+    globalConfig: GlobalGeneratorConfig
+  ): GeneratorStyles => {
+    if (!this.generators[config.type]) {
+      throw new Error(`There is no generator loaded for the config: ${config}}`)
     }
-    const generator = this.generators[layer.type]
-    const generatorStyles = this._applyGenericStyle(layer, generator.getStyle(layer))
+    const finalConfig = {
+      ...globalConfig,
+      ...config,
+    }
+    const generator = this.generators[finalConfig.type]
+    const generatorStyles = this._applyGenericStyle(finalConfig, generator.getStyle(finalConfig))
     return generatorStyles
   }
 
@@ -89,7 +100,7 @@ class LayerComposer {
     }
   }
 
-  // Main mathod of the library which uses the privates one to compose the style
+  // Main method of the library which uses the privates one to compose the style
   getGLStyle = (
     layers: GeneratorConfig[],
     globalGeneratorConfig: GlobalGeneratorConfig = {}
@@ -99,11 +110,9 @@ class LayerComposer {
       return { style: this._getStyleJson() }
     }
 
-    this.globalGeneratorConfig = globalGeneratorConfig
-
     let layersPromises: Promise<GeneratorStyles>[] = []
     const layersGenerated = layers.map((layer) => {
-      const { promise, promises, ...rest } = this._getGeneratedLayer(layer)
+      const { promise, promises, ...rest } = this._getGeneratorStyles(layer, globalGeneratorConfig)
       let layerPromises: Promise<GeneratorStyles>[] = []
       if (promise) {
         layerPromises = [promise]
@@ -114,8 +123,8 @@ class LayerComposer {
       return rest
     })
 
-    const sourcesStyle = this._getGeneratedLayerSource(layersGenerated)
-    const layersStyle = this._getGeneratedLayerLayers(layersGenerated)
+    const sourcesStyle = this._getGeneratorSources(layersGenerated)
+    const layersStyle = this._getGeneratorLayers(layersGenerated)
 
     this.latestGenerated = { sourcesStyle, layersStyle }
 
