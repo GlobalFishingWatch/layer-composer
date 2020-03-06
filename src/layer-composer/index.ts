@@ -1,1 +1,1 @@
-export { default, DEFAULT_CONFIG } from './layerComposer'
+export { default, DEFAULT_CONFIG } from './layer-composer'

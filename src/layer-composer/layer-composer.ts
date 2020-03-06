@@ -5,6 +5,7 @@ import {
   LayerComposerOptions,
   GeneratorStyles,
   GeneratorConfig,
+  GlobalGeneratorConfig,
 } from './types'
 
 export const DEFAULT_CONFIG = {
@@ -20,6 +21,7 @@ class LayerComposer {
   sprite: string
   generators: { [key: string]: any }
   latestGenerated: any
+  globalGeneratorConfig: GlobalGeneratorConfig
 
   constructor(params?: LayerComposerOptions) {
     this.version = (params && params.version) || DEFAULT_CONFIG.version
@@ -29,10 +31,12 @@ class LayerComposer {
 
     // Used to cache results and always return the latest style in promises
     this.latestGenerated = {}
+
+    this.globalGeneratorConfig = {}
   }
 
   // Sources dictionary for id and array of sources per layer
-  _getGeneratedLayerSource = (layers: GeneratorStyles[]) => {
+  _getGeneratorSources = (layers: GeneratorStyles[]) => {
     return Object.fromEntries(
       layers
         .filter((layer) => layer.sources && layer.sources.length)
@@ -41,7 +45,7 @@ class LayerComposer {
   }
 
   // Same here for layers
-  _getGeneratedLayerLayers = (layers: GeneratorStyles[]) => {
+  _getGeneratorLayers = (layers: GeneratorStyles[]) => {
     return Object.fromEntries(
       layers
         .filter((layer) => layer.layers && layer.layers.length)
@@ -49,13 +53,39 @@ class LayerComposer {
     )
   }
 
+  // apply generic config to all generator layers
+  _applyGenericStyle = (
+    generatorConfig: GeneratorConfig,
+    generatorStyles: GeneratorStyles
+  ): GeneratorStyles => {
+    const newGeneratorStyles = { ...generatorStyles }
+    newGeneratorStyles.layers = newGeneratorStyles.layers.map((layer) => {
+      const newLayer = { ...layer }
+      if (generatorConfig.visible !== undefined && generatorConfig.visible !== null) {
+        if (!newLayer.layout) {
+          newLayer.layout = {}
+        }
+        newLayer.layout.visibility = generatorConfig.visible === true ? 'visible' : 'none'
+      }
+      return newLayer
+    })
+    return newGeneratorStyles
+  }
+
   // Uses generators to return the layer with sources and layers
-  _getGeneratedLayer = (layer: GeneratorConfig) => {
-    if (!this.generators[layer.type]) {
-      throw new Error(`There is no generator loaded for the layer: ${layer}}`)
+  _getGeneratorStyles = (
+    config: GeneratorConfig,
+    globalConfig: GlobalGeneratorConfig
+  ): GeneratorStyles => {
+    if (!this.generators[config.type]) {
+      throw new Error(`There is no generator loaded for the config: ${config}}`)
     }
-    const generator = this.generators[layer.type]
-    const generatorStyles = generator.getStyle(layer)
+    const finalConfig = {
+      ...globalConfig,
+      ...config,
+    }
+    const generator = this.generators[finalConfig.type]
+    const generatorStyles = this._applyGenericStyle(finalConfig, generator.getStyle(finalConfig))
     return generatorStyles
   }
 
@@ -70,8 +100,11 @@ class LayerComposer {
     }
   }
 
-  // Main mathod of the library which uses the privates one to compose the style
-  getGLStyle = (layers: GeneratorConfig[]): LayerComposerStyles => {
+  // Main method of the library which uses the privates one to compose the style
+  getGLStyle = (
+    layers: GeneratorConfig[],
+    globalGeneratorConfig: GlobalGeneratorConfig = {}
+  ): LayerComposerStyles => {
     if (!layers) {
       console.warn('No layers passed to layer manager')
       return { style: this._getStyleJson() }
@@ -79,7 +112,7 @@ class LayerComposer {
 
     let layersPromises: Promise<GeneratorStyles>[] = []
     const layersGenerated = layers.map((layer) => {
-      const { promise, promises, ...rest } = this._getGeneratedLayer(layer)
+      const { promise, promises, ...rest } = this._getGeneratorStyles(layer, globalGeneratorConfig)
       let layerPromises: Promise<GeneratorStyles>[] = []
       if (promise) {
         layerPromises = [promise]
@@ -90,8 +123,8 @@ class LayerComposer {
       return rest
     })
 
-    const sourcesStyle = this._getGeneratedLayerSource(layersGenerated)
-    const layersStyle = this._getGeneratedLayerLayers(layersGenerated)
+    const sourcesStyle = this._getGeneratorSources(layersGenerated)
+    const layersStyle = this._getGeneratorLayers(layersGenerated)
 
     this.latestGenerated = { sourcesStyle, layersStyle }
 

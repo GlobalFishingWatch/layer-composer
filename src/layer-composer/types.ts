@@ -32,4 +32,11 @@ export interface GeneratorConfig {
   type: 'BACKGROUND' | 'BASEMAP' | 'CARTO_POLYGONS' | 'GL_STYLES' | 'HEATMAP' | string
   visible?: boolean
   opacity?: number
+  start?: string
+  end?: string
+}
+
+export interface GlobalGeneratorConfig {
+  start?: string
+  end?: string
 }

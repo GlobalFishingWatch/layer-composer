@@ -5,14 +5,14 @@ import CartoGenerator, {
   CARTO_POLYGONS_TYPE as CARTO_POLYGONS,
   CARTO_FISHING_MAP_API,
 } from './carto-polygons/carto-polygons'
-
 import HeatmapGenerator, {
-  HEATMAP_TYPE,
+  HEATMAP_TYPE as HEATMAP,
   HEATMAP_GEOM_TYPES,
   HEATMAP_COLOR_RAMPS,
 } from './heatmap/heatmap'
+import TrackGenerator, { TRACK_TYPE as TRACK } from './track/track'
 
-const TYPES = { BASEMAP, CARTO_POLYGONS, BACKGROUND, GL, HEATMAP_TYPE }
+const TYPES = { BASEMAP, CARTO_POLYGONS, BACKGROUND, GL, HEATMAP, TRACK }
 export { TYPES }
 
 export { HEATMAP_GEOM_TYPES, HEATMAP_COLOR_RAMPS }
@@ -22,5 +22,6 @@ export default {
   [BASEMAP]: new BaseMapGenerator(),
   [GL]: new GLStyleGenerator(),
   [CARTO_POLYGONS]: new CartoGenerator({ baseUrl: CARTO_FISHING_MAP_API }),
-  [HEATMAP_TYPE]: new HeatmapGenerator({}),
+  [HEATMAP]: new HeatmapGenerator({}),
+  [TRACK]: new TrackGenerator(),
 }
