@@ -11,8 +11,11 @@ import HeatmapGenerator, {
   HEATMAP_COLOR_RAMPS,
 } from './heatmap/heatmap'
 import TrackGenerator, { TRACK_TYPE as TRACK } from './track/track'
+import VesselEventsGenerator, {
+  VESSEL_EVENTS_TYPE as VESSEL_EVENTS,
+} from './vessel-events/vessel-events'
 
-const TYPES = { BASEMAP, CARTO_POLYGONS, BACKGROUND, GL, HEATMAP, TRACK }
+const TYPES = { BASEMAP, CARTO_POLYGONS, BACKGROUND, GL, HEATMAP, TRACK, VESSEL_EVENTS }
 export { TYPES }
 
 export { HEATMAP_GEOM_TYPES, HEATMAP_COLOR_RAMPS }
@@ -24,4 +27,5 @@ export default {
   [CARTO_POLYGONS]: new CartoGenerator({ baseUrl: CARTO_FISHING_MAP_API }),
   [HEATMAP]: new HeatmapGenerator({}),
   [TRACK]: new TrackGenerator(),
+  [VESSEL_EVENTS]: new VesselEventsGenerator(),
 }

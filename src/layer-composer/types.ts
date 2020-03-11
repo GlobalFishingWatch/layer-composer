@@ -29,7 +29,15 @@ export interface Generator {
 
 export interface GeneratorConfig {
   id: string
-  type: 'BACKGROUND' | 'BASEMAP' | 'CARTO_POLYGONS' | 'GL_STYLES' | 'HEATMAP' | string
+  type:
+    | 'BACKGROUND'
+    | 'BASEMAP'
+    | 'CARTO_POLYGONS'
+    | 'GL_STYLES'
+    | 'HEATMAP'
+    | 'TRACK'
+    | 'VESSEL_EVENTS'
+    | string
   visible?: boolean
   opacity?: number
   start?: string
