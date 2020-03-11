@@ -1,6 +1,7 @@
 import { GeneratorConfig } from 'layer-composer/types'
 import { FeatureCollection } from 'geojson'
 import { GeoJSONSourceRaw } from 'mapbox-gl'
+import { Dictionary } from 'types'
 
 export const VESSEL_EVENTS_TYPE = 'VESSEL_EVENTS'
 
@@ -9,13 +10,6 @@ export interface VesselEventsGeneratorConfig extends GeneratorConfig {
 }
 
 const BASEMAP_COLOR = '#00265c'
-const EVENTS_COLORS = {
-  encounter: '#FAE9A0',
-  partially: '#F59E84',
-  unmatched: '#CE2C54',
-  loitering: '#cfa9f9',
-  port: '#99EEFF',
-}
 
 class VesselsEventsGenerator {
   type = VESSEL_EVENTS_TYPE
@@ -78,3 +72,61 @@ class VesselsEventsGenerator {
 }
 
 export default VesselsEventsGenerator
+
+type AuthorizationOptions = 'authorized' | 'partially' | 'unmatched'
+type Event = {
+  type: string
+  active: boolean
+  timestamp: number
+  authorizationStatus: AuthorizationOptions
+  coordinates: {
+    lng: number
+    lat: number
+  }
+}
+
+const EVENTS_COLORS: Dictionary<string> = {
+  encounter: '#FAE9A0',
+  partially: '#F59E84',
+  unmatched: '#CE2C54',
+  loitering: '#cfa9f9',
+  port: '#99EEFF',
+}
+
+const getEncounterAuthColor = (authorizationStatus: AuthorizationOptions) => {
+  switch (authorizationStatus) {
+    case 'authorized':
+      return EVENTS_COLORS.encounter
+    case 'partially':
+      return EVENTS_COLORS.partially
+    case 'unmatched':
+      return EVENTS_COLORS.unmatched
+    default:
+      return ''
+  }
+}
+
+export const getVesselEventsGeojson = (trackEvents: Event[] | null) => {
+  if (!trackEvents) return null
+
+  return {
+    type: 'FeatureCollection',
+    features: trackEvents.map((event: Event) => ({
+      type: 'Feature',
+      properties: {
+        type: event.type,
+        active: event.active,
+        timestamp: event.timestamp,
+        icon: `carrier_portal_${event.type}`,
+        color:
+          event.type === 'encounter'
+            ? getEncounterAuthColor(event.authorizationStatus)
+            : EVENTS_COLORS[event.type],
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [event.coordinates.lng, event.coordinates.lat],
+      },
+    })),
+  }
+}

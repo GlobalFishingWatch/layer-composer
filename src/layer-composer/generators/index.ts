@@ -13,12 +13,18 @@ import HeatmapGenerator, {
 import TrackGenerator, { TRACK_TYPE as TRACK } from './track/track'
 import VesselEventsGenerator, {
   VESSEL_EVENTS_TYPE as VESSEL_EVENTS,
+  getVesselEventsGeojson,
 } from './vessel-events/vessel-events'
 
 const TYPES = { BASEMAP, CARTO_POLYGONS, BACKGROUND, GL, HEATMAP, TRACK, VESSEL_EVENTS }
 export { TYPES }
 
 export { HEATMAP_GEOM_TYPES, HEATMAP_COLOR_RAMPS }
+
+const dataTransforms = {
+  getVesselEventsGeojson,
+}
+export { dataTransforms }
 
 export default {
   [BACKGROUND]: new BackgroundGenerator(),
