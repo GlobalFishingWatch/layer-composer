@@ -13,7 +13,7 @@ export {
   TYPES,
   HEATMAP_GEOM_TYPES,
   HEATMAP_COLOR_RAMPS,
-  dataTransforms,
+  getVesselEventsGeojson,
 } from './layer-composer/generators'
 
 export { default as sort, convertLegacyGroups } from './sort'

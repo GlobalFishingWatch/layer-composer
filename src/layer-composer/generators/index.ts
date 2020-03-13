@@ -21,10 +21,7 @@ export { TYPES }
 
 export { HEATMAP_GEOM_TYPES, HEATMAP_COLOR_RAMPS }
 
-const dataTransforms = {
-  getVesselEventsGeojson,
-}
-export { dataTransforms }
+export { getVesselEventsGeojson }
 
 export default {
   [BACKGROUND]: new BackgroundGenerator(),
