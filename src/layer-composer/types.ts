@@ -1,4 +1,9 @@
 import { Layer, AnySourceImpl } from 'mapbox-gl'
+
+export interface Dictionary<T> {
+  [key: string]: T
+}
+
 // This what is returned by LayerComposer.getGLStyle
 export interface LayerComposerStyles {
   style: any
