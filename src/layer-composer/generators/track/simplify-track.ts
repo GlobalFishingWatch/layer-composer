@@ -105,6 +105,7 @@ export const simplifyTrack = (track: FeatureCollection) => {
       geometry: simplifiedGeometry,
       properties: {
         coordinateProperties: simplifiedCoordProps,
+        ...feature.properties,
       },
     }
     simplifiedTrack.features.push(simplifiedFeature)
