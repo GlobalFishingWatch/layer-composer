@@ -21,7 +21,6 @@ class LayerComposer {
   sprite: string
   generators: { [key: string]: any }
   latestGenerated: any
-  globalGeneratorConfig: GlobalGeneratorConfig
 
   constructor(params?: LayerComposerOptions) {
     this.version = (params && params.version) || DEFAULT_CONFIG.version
@@ -31,8 +30,6 @@ class LayerComposer {
 
     // Used to cache results and always return the latest style in promises
     this.latestGenerated = {}
-
-    this.globalGeneratorConfig = {}
   }
 
   // Sources dictionary for id and array of sources per layer
