@@ -1,12 +1,20 @@
 import { GeneratorConfig } from 'layer-composer/types'
-import { FeatureCollection } from 'geojson'
+import { FeatureCollection, Point } from 'geojson'
 import { GeoJSONSourceRaw } from 'mapbox-gl'
 import { Dictionary } from 'types'
 
 export const VESSEL_EVENTS_TYPE = 'VESSEL_EVENTS'
 
+interface CurrentEvent {
+  position: {
+    lat: number
+    lng: number
+  }
+}
+
 export interface VesselEventsGeneratorConfig extends GeneratorConfig {
   data: FeatureCollection
+  currentEvent?: CurrentEvent
 }
 
 const BASEMAP_COLOR = '#00265c'
@@ -14,24 +22,63 @@ const BASEMAP_COLOR = '#00265c'
 class VesselsEventsGenerator {
   type = VESSEL_EVENTS_TYPE
 
-  _getStyleSources = (layer: VesselEventsGeneratorConfig) => {
-    const { id, data } = layer
+  _setActiveEvent = (data: FeatureCollection, currentEvent: CurrentEvent): FeatureCollection => {
+    const featureCollection = { ...data }
+    featureCollection.features = featureCollection.features.map((feature) => {
+      const newFeature = { ...feature }
+      const geom = feature.geometry as Point
+      const featureLng = geom.coordinates[0]
+      const featureLat = geom.coordinates[1]
+      newFeature.properties = newFeature.properties || {}
+      newFeature.properties.active =
+        currentEvent !== null &&
+        featureLng === currentEvent.position.lng &&
+        featureLat === currentEvent.position.lat
+      return newFeature
+    })
+    featureCollection.features.sort((a, b) => {
+      if (a.properties && a.properties.active) return 1
+      else if (b.properties && b.properties.active) return -1
+      else return 0
+    })
+    return featureCollection
+  }
+
+  _getStyleSources = (config: VesselEventsGeneratorConfig) => {
+    const { id, data } = config
 
     if (!data) {
-      console.warn(`${VESSEL_EVENTS_TYPE} source generator needs geojson data`, layer)
+      // console.warn(`${VESSEL_EVENTS_TYPE} source generator needs geojson data`, config)
       return []
+    }
+
+    let newData: FeatureCollection = { ...data }
+    if (config.currentEvent) {
+      newData = this._setActiveEvent(newData, config.currentEvent)
+    }
+
+    if (config.start && config.end) {
+      const startMs = new Date(config.start).getTime()
+      const endMs = new Date(config.end).getTime()
+      newData.features = newData.features.filter((feature) => {
+        return (
+          feature.properties &&
+          feature.properties.timestamp > startMs &&
+          feature.properties.timestamp < endMs
+        )
+      })
     }
 
     const source: GeoJSONSourceRaw = {
       type: 'geojson',
-      data: data || null,
+      data: newData,
     }
     return [{ id, ...source }]
   }
 
-  _getStyleLayers = (layer: VesselEventsGeneratorConfig) => {
-    if (!layer.data) {
-      console.warn(`${VESSEL_EVENTS_TYPE} source generator needs geojson data`, layer)
+  _getStyleLayers = (config: VesselEventsGeneratorConfig) => {
+    if (!config.data) {
+      // console.warn(`${VESSEL_EVENTS_TYPE} source generator needs geojson data`, config)
       return []
     }
 
@@ -40,7 +87,7 @@ class VesselsEventsGenerator {
       {
         id: 'vessel_events_bg',
         type: 'circle',
-        source: layer.id,
+        source: config.id,
         paint: {
           'circle-color': ['get', 'color'],
           'circle-stroke-width': 2,
@@ -50,7 +97,7 @@ class VesselsEventsGenerator {
       },
       {
         id: 'vessel_events',
-        source: layer.id,
+        source: config.id,
         type: 'symbol',
         layout: {
           'icon-allow-overlap': true,
@@ -62,11 +109,11 @@ class VesselsEventsGenerator {
     return layers
   }
 
-  getStyle = (layer: VesselEventsGeneratorConfig) => {
+  getStyle = (config: VesselEventsGeneratorConfig) => {
     return {
-      id: layer.id,
-      sources: this._getStyleSources(layer),
-      layers: this._getStyleLayers(layer),
+      id: config.id,
+      sources: this._getStyleSources(config),
+      layers: this._getStyleLayers(config),
     }
   }
 }
@@ -74,14 +121,19 @@ class VesselsEventsGenerator {
 export default VesselsEventsGenerator
 
 type AuthorizationOptions = 'authorized' | 'partially' | 'unmatched'
-type Event = {
+
+type RawEvent = {
+  id: string
   type: string
-  active: boolean
-  timestamp: number
-  authorizationStatus: AuthorizationOptions
-  coordinates: {
-    lng: number
+  position: {
+    lng?: number
+    lon?: number
     lat: number
+  }
+  start: number
+  encounter?: {
+    authorized: boolean
+    authorizationStatus: AuthorizationOptions
   }
 }
 
@@ -106,27 +158,40 @@ const getEncounterAuthColor = (authorizationStatus: AuthorizationOptions) => {
   }
 }
 
-export const getVesselEventsGeojson = (trackEvents: Event[] | null) => {
-  if (!trackEvents) return null
-
-  return {
+export const getVesselEventsGeojson = (trackEvents: RawEvent[] | null): FeatureCollection => {
+  const featureCollection: FeatureCollection = {
     type: 'FeatureCollection',
-    features: trackEvents.map((event: Event) => ({
+    features: [],
+  }
+
+  if (!trackEvents) return featureCollection
+
+  featureCollection.features = trackEvents.map((event: RawEvent) => {
+    const authorized = event.encounter && event.encounter.authorized === true
+    const authorizationStatus = event.encounter
+      ? event.encounter.authorizationStatus
+      : ('unmatched' as AuthorizationOptions)
+
+    const lng = event.position.lng || event.position.lon || 0
+    return {
       type: 'Feature',
       properties: {
         type: event.type,
-        active: event.active,
-        timestamp: event.timestamp,
+        timestamp: event.start,
+        authorized,
+        authorizationStatus,
         icon: `carrier_portal_${event.type}`,
         color:
           event.type === 'encounter'
-            ? getEncounterAuthColor(event.authorizationStatus)
+            ? getEncounterAuthColor(authorizationStatus)
             : EVENTS_COLORS[event.type],
       },
       geometry: {
         type: 'Point',
-        coordinates: [event.coordinates.lng, event.coordinates.lat],
+        coordinates: [lng, event.position.lat],
       },
-    })),
-  }
+    }
+  })
+
+  return featureCollection
 }
