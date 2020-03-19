@@ -27,7 +27,7 @@ export const layers: Dictionary<Layer> = {
       group: Group.BasemapFill,
     },
     paint: {
-      'fill-color': '#374a6d',
+      'fill-color': '#203560',
       'fill-opacity': 0.99,
     },
   },

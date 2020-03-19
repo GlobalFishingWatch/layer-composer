@@ -25,7 +25,7 @@ class BackgroundGenerator {
         visibility: layer.visible !== undefined ? (layer.visible ? 'visible' : 'none') : 'visible',
       },
       paint: {
-        'background-color': layer.color || '#001436',
+        'background-color': layer.color || '#0A1738',
       },
       metadata: {
         group: Group.Background,
