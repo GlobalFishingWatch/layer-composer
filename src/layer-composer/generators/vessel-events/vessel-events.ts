@@ -2,6 +2,7 @@ import { GeneratorConfig } from 'layer-composer/types'
 import { FeatureCollection, Point } from 'geojson'
 import { GeoJSONSourceRaw } from 'mapbox-gl'
 import { Dictionary } from 'types'
+import { DEFAULT_LANDMASS_COLOR } from '../basemap/basemap-layers'
 
 export const VESSEL_EVENTS_TYPE = 'VESSEL_EVENTS'
 
@@ -16,8 +17,6 @@ export interface VesselEventsGeneratorConfig extends GeneratorConfig {
   data: FeatureCollection
   currentEvent?: CurrentEvent
 }
-
-const BASEMAP_COLOR = '#00265c'
 
 class VesselsEventsGenerator {
   type = VESSEL_EVENTS_TYPE
@@ -91,7 +90,7 @@ class VesselsEventsGenerator {
         paint: {
           'circle-color': ['get', 'color'],
           'circle-stroke-width': 2,
-          'circle-stroke-color': [...activeFilter, 'rgba(0, 193, 231, 1)', BASEMAP_COLOR],
+          'circle-stroke-color': [...activeFilter, 'rgba(0, 193, 231, 1)', DEFAULT_LANDMASS_COLOR],
           'circle-radius': [...activeFilter, 12, 5],
         },
       },
