@@ -23,12 +23,12 @@
     "test:watch": "jest --watch",
     "test:prod": "npm run lint && npm run test -- --no-cache",
     "lint": "eslint -c .eslintrc src/**/*.ts test/*.ts --fix",
-    "prebuild": "rimraf ./dist/*",
     "build": "cross-env NODE_ENV=production tsc --module commonjs && rollup -c rollup.config.ts",
     "typedoc": "typedoc --out docs --target es6 --theme minimal --mode file src",
     "gh-pages": "gh-pages -d docs",
     "release:minor": "release minor",
     "release:patch": "release patch",
+    "prebuild": "rimraf ./dist/*",
     "prepublish": "npm run build",
     "publishdoc": "npm run typedoc && npm run gh-pages"
   },

@@ -9,7 +9,8 @@ import aggregate, { rawTileToIntArray } from './aggregate'
 import tilebelt from '@mapbox/tilebelt'
 
 // TODO use different tsconfig to include worker types here
-// declare const self: ServiceWorkerGlobalScope
+// it needs to include "workers" as lib but can't overlap with "dom"
+declare const self: any
 
 const FAST_TILES_KEY = '__fast_tiles__'
 const FAST_TILES_KEY_RX = new RegExp(FAST_TILES_KEY)
@@ -25,31 +26,6 @@ const isoToDate = (iso: string) => {
 const isoToDay = (iso: string) => {
   return isoToDate(iso) / 1000 / 60 / 60 / 24
 }
-
-self.addEventListener('install', () => {
-  console.log('install sw')
-  // cleaning up old cache values...
-})
-
-self.addEventListener('activate', (event: any) => {
-  console.log('activate sw_')
-  // self.clients.claim()
-
-  // const allClients = clients.matchAll({
-  //   includeUncontrolled: true
-  // }).then((a) => {
-  //   console.log(a)
-  // });
-
-  // Claim control of clients right after activating
-  // This allows
-  event.waitUntil(
-    (self as any).clients.claim().then(() => {
-      console.log('Now ready to handle fetches?')
-    })
-  )
-  console.log('Now ready to handle fetches!')
-})
 
 const aggregateIntArray = (intArray: any, options: any) => {
   const { geomType, numCells, delta, x, y, z, quantizeOffset, singleFrameStart } = options
@@ -82,6 +58,21 @@ const encodeTileResponse = (aggregatedGeoJSON: any, options: any) => {
 
   return new Response(newBuff)
 }
+
+self.addEventListener('install', () => {
+  console.log('Install sw with skip waiting')
+  self.skipWaiting()
+})
+
+self.addEventListener('activate', (event: any) => {
+  console.log('Now ready to handle fetches?')
+
+  event.waitUntil(
+    self.clients.claim().then(() => {
+      console.log('Now ready to handle fetches!')
+    })
+  )
+})
 
 self.addEventListener('fetch', (fetchEvent: any) => {
   const originalUrl = fetchEvent.request.url
@@ -127,14 +118,14 @@ self.addEventListener('fetch', (fetchEvent: any) => {
   // console.log('real tile zoom', z)
   const finalReq = new Request(finalUrlStr)
 
-  const cachePromise = self.caches.match(finalReq).then((cacheResponse) => {
+  const cachePromise = self.caches.match(finalReq).then((cacheResponse: any) => {
     const now = new Date().getTime()
     const cachedTimestamp =
       (cacheResponse && parseInt(cacheResponse.headers.get(CACHE_TIMESTAMP_HEADER_KEY) || '')) || 0
     // only get value from cache if it's recent enough
     const hasRecentCache = cacheResponse && now - cachedTimestamp < CACHE_MAX_AGE_MS
     if (hasRecentCache && cacheResponse) {
-      return cacheResponse.arrayBuffer().then((ab) => {
+      return cacheResponse.arrayBuffer().then((ab: any) => {
         const intArray = new Uint16Array(ab)
         const aggregated = aggregateIntArray(intArray, aggregateParams)
         return encodeTileResponse(aggregated, aggregateParams)
@@ -166,7 +157,7 @@ self.addEventListener('fetch', (fetchEvent: any) => {
         // statusText: fetchResponse.statusText,
         headers,
       })
-      self.caches.open(CACHE_NAME).then((cache) => {
+      self.caches.open(CACHE_NAME).then((cache: any) => {
         cache.put(finalReq, cacheResponse)
       })
     })
@@ -178,5 +169,6 @@ self.addEventListener('fetch', (fetchEvent: any) => {
     })
     return aggregatePromise
   })
+
   fetchEvent.respondWith(cachePromise)
 })
