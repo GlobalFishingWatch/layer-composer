@@ -1,11 +1,12 @@
 import { FeatureCollection, Feature, LineString, Position } from 'geojson'
 import { Dictionary } from '../../types'
 
-const POS_MAX_Δ = 0.005 // 500m at equator - https://www.usna.edu/Users/oceano/pguth/md_help/html/approx_equivalents.htm
+const DEFAULT_POS_MAX_Δ = 0.005 // 500m at equator - https://www.usna.edu/Users/oceano/pguth/md_help/html/approx_equivalents.htm
 const COORD_PROPS_MAX_ΔS: Dictionary<number> = {
-  times: 600000, //10mn
-  speeds: 1,
-  courses: 20,
+  // times: 600000, //10mn
+  // times: 36000000, //10hr
+  // speeds: 1,
+  // courses: 20,
 }
 
 const POS_ROUND = 4
@@ -33,7 +34,10 @@ const compressTimestamp = (ts: number) => {
   return Math.round((ts - TS_OFFSET) / 1000)
 }
 
-export const simplifyTrack = (track: FeatureCollection) => {
+export const simplifyTrack = (
+  track: FeatureCollection<LineString>,
+  posMaxΔ = DEFAULT_POS_MAX_Δ
+) => {
   const simplifiedTrack: FeatureCollection = {
     type: 'FeatureCollection',
     features: [],
@@ -83,7 +87,7 @@ export const simplifyTrack = (track: FeatureCollection) => {
       }
 
       const posΔ: number = cheapDistance(pos, lastPos)
-      const isPosInfMaxΔ = posΔ < POS_MAX_Δ
+      const isPosInfMaxΔ = posΔ < posMaxΔ
 
       // check that every coordProp Δ is less than max Δ
       const isCoordPropsInfMaxΔ = coordPropsKeys.every((key) => {

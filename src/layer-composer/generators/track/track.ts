@@ -1,10 +1,30 @@
 import { GeneratorConfig } from 'layer-composer/types'
-// TODO custom "augemented" GeoJSON type
+import memoizeOne from 'memoize-one'
+import { scaleLinear, scalePow } from 'd3-scale'
+// TODO custom "augmented" GeoJSON type?
 // see https://github.com/yagajs/generic-geojson/blob/master/index.d.ts
-import { FeatureCollection } from 'geojson'
+import { FeatureCollection, LineString } from 'geojson'
 import filterGeoJSONByTimerange from './filterGeoJSONByTimerange'
+import { simplifyTrack } from './simplify-track'
 
 export const TRACK_TYPE = 'TRACK'
+
+const mapZoomToMinPosΔ = (zoomLoadLevel: number) => {
+  const normalizedZoom = scaleLinear()
+    .clamp(true)
+    .range([1, 0])
+    .domain([3, 12])(zoomLoadLevel)
+
+  const minPosΔ = scalePow()
+    .clamp(true)
+    .exponent(1.5)
+    .range([0.0005, 0.05])
+    .domain([0, 1])(normalizedZoom)
+
+  console.log(zoomLoadLevel, normalizedZoom, minPosΔ)
+
+  return minPosΔ
+}
 
 export interface TrackGeneratorConfig extends GeneratorConfig {
   data: FeatureCollection
@@ -14,6 +34,21 @@ export interface TrackGeneratorConfig extends GeneratorConfig {
 class TrackGenerator {
   type = TRACK_TYPE
 
+  _simplifyTrack = memoizeOne((data: FeatureCollection, zoomLoadLevel: number) => {
+    const s = mapZoomToMinPosΔ(zoomLoadLevel)
+    const simplifiedData = simplifyTrack(data as FeatureCollection<LineString>, s)
+    console.log(simplifiedData)
+    return simplifiedData
+  })
+
+  _filterByTimerange = memoizeOne((data: FeatureCollection, start: string, end: string) => {
+    const startMs = new Date(start).getTime()
+    const endMs = new Date(end).getTime()
+
+    const filteredData = filterGeoJSONByTimerange(data, startMs, endMs)
+    return filteredData
+  })
+
   _getStyleSources = (config: TrackGeneratorConfig) => {
     const defaultGeoJSON: FeatureCollection = {
       type: 'FeatureCollection',
@@ -22,22 +57,17 @@ class TrackGenerator {
     const source = {
       id: config.id,
       type: 'geojson',
-      data: defaultGeoJSON,
-    }
-    if (!config.data) {
-      return [source]
+      data: config.data || defaultGeoJSON,
     }
 
-    if (!config.start || !config.end) {
-      source.data = config.data as FeatureCollection
-      return [source]
+    if (config.zoomLoadLevel) {
+      source.data = this._simplifyTrack(source.data, config.zoomLoadLevel)
     }
 
-    const startMs = new Date(config.start).getTime()
-    const endMs = new Date(config.end).getTime()
+    if (config.start && config.end) {
+      source.data = this._filterByTimerange(source.data, config.start, config.end)
+    }
 
-    const filteredData = filterGeoJSONByTimerange(config.data, startMs, endMs)
-    source.data = filteredData
     return [source]
   }
 

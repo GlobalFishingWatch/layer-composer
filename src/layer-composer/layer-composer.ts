@@ -69,6 +69,15 @@ class LayerComposer {
     return newGeneratorStyles
   }
 
+  // Compute helpers based on global config
+  _getGlobalConfig = (config: GlobalGeneratorConfig) => {
+    const newConfig = { ...config }
+    if (newConfig.zoom) {
+      newConfig.zoomLoadLevel = Math.floor(newConfig.zoom)
+    }
+    return newConfig
+  }
+
   // Uses generators to return the layer with sources and layers
   _getGeneratorStyles = (
     config: GeneratorConfig,
@@ -78,7 +87,7 @@ class LayerComposer {
       throw new Error(`There is no generator loaded for the config: ${config.type}}`)
     }
     const finalConfig = {
-      ...globalConfig,
+      ...this._getGlobalConfig(globalConfig),
       ...config,
     }
     const generator = this.generators[finalConfig.type]

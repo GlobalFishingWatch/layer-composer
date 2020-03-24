@@ -32,7 +32,14 @@ export interface Generator {
   getStyle: (layer: GeneratorConfig) => GeneratorStyles
 }
 
-export interface GeneratorConfig {
+export interface GlobalGeneratorConfig {
+  start?: string
+  end?: string
+  zoom?: number
+  zoomLoadLevel?: number
+}
+
+export interface GeneratorConfig extends GlobalGeneratorConfig {
   id: string
   type:
     | 'BACKGROUND'
@@ -45,11 +52,4 @@ export interface GeneratorConfig {
     | string
   visible?: boolean
   opacity?: number
-  start?: string
-  end?: string
-}
-
-export interface GlobalGeneratorConfig {
-  start?: string
-  end?: string
 }
