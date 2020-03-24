@@ -38,7 +38,7 @@ export const simplifyTrack = (
   track: FeatureCollection<LineString>,
   posMaxΔ = DEFAULT_POS_MAX_Δ
 ) => {
-  const simplifiedTrack: FeatureCollection = {
+  const simplifiedTrack: FeatureCollection<LineString> = {
     type: 'FeatureCollection',
     features: [],
   }
@@ -52,9 +52,7 @@ export const simplifyTrack = (
       coordinates: [],
     }
     const simplifiedCoordProps: Dictionary<number[]> = {}
-    const coordPropsKeys = Object.keys(coordProps).filter(
-      (key) => COORD_PROPS_MAX_ΔS[key] !== undefined
-    )
+    const coordPropsKeys = Object.keys(coordProps)
     coordPropsKeys.forEach((key) => (simplifiedCoordProps[key] = []))
 
     let lastPos: Position
@@ -62,26 +60,18 @@ export const simplifyTrack = (
 
     const addFrame = (i: number) => {
       const pos = line.coordinates[i]
-      simplifiedGeometry.coordinates.push(
-        // roundPos(
-        pos
-        // )
-      )
+      simplifiedGeometry.coordinates.push(pos)
       lastPos = pos
       coordPropsKeys.forEach((key) => {
         const coordProp = coordProps[key][i]
         const coordPropValue = round(coordProp, COORD_PROPS_ROUND[key])
-        // if (key === 'times') {
-        //   coordPropValue = compressTimestamp(coordPropValue)
-        // }
-
         simplifiedCoordProps[key].push(coordPropValue)
         lastCoordinateProperties[key] = coordProp
       })
     }
 
     line.coordinates.forEach((pos, i) => {
-      if (i === 0) {
+      if (i === 0 || i === line.coordinates.length - 1) {
         addFrame(i)
         return
       }
@@ -91,8 +81,11 @@ export const simplifyTrack = (
 
       // check that every coordProp Δ is less than max Δ
       const isCoordPropsInfMaxΔ = coordPropsKeys.every((key) => {
-        const Δ = Math.abs(coordProps[key][i] - lastCoordinateProperties[key])
         const maxΔ = COORD_PROPS_MAX_ΔS[key]
+        if (maxΔ === undefined) {
+          return true
+        }
+        const Δ = Math.abs(coordProps[key][i] - lastCoordinateProperties[key])
         return Δ < maxΔ
       })
 
@@ -104,12 +97,11 @@ export const simplifyTrack = (
       // else add it to the track and store it for next Δ calc
       addFrame(i)
     })
-    const simplifiedFeature: Feature = {
+    const simplifiedFeature: Feature<LineString> = {
       type: 'Feature',
       geometry: simplifiedGeometry,
       properties: {
         coordinateProperties: simplifiedCoordProps,
-        ...feature.properties,
       },
     }
     simplifiedTrack.features.push(simplifiedFeature)
