@@ -37,17 +37,37 @@ class TrackGenerator {
     const endMs = new Date(config.end).getTime()
 
     const filteredData = filterGeoJSONByTimerange(config.data, startMs, endMs)
+    // const filteredData = config.data
     source.data = filteredData
     return [source]
   }
 
   _getStyleLayers = (config: TrackGeneratorConfig) => {
+    // const startMs = new Date((config as any).start).getTime()
+    // const endMs = new Date((config as any).end).getTime()
+    console.log(config)
+
+    const defaultColor = config.color || 'hsl(100, 100%, 55%)'
+    const filteredColor = 'rgba(0, 0, 0, 0)'
+
     const layer = {
       type: 'line',
       id: config.id,
       source: config.id,
       layout: {},
-      paint: { 'line-color': config.color || 'hsl(100, 100%, 55%)' },
+      paint: {
+        'line-color': defaultColor,
+        // [
+        //   'case',
+        //   [
+        //     'all',
+        //     ['>', ['get', 'ts'], startMs],
+        //     ['<', ['get', 'ts'], endMs],
+        //   ],
+        //   defaultColor,
+        //   filteredColor,
+        // ],
+      },
     }
     return [layer]
   }
