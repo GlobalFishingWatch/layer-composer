@@ -1,11 +1,11 @@
-import { GeneratorConfig, Dictionary } from 'layer-composer/types'
-import memoizeOne from 'memoize-one'
 import { scaleLinear, scalePow } from 'd3-scale'
+import { FeatureCollection, LineString } from 'geojson'
+import { GeneratorConfig, Dictionary } from 'layer-composer/types'
 // TODO custom "augmented" GeoJSON type?
 // see https://github.com/yagajs/generic-geojson/blob/master/index.d.ts
-import { FeatureCollection, LineString } from 'geojson'
 import filterGeoJSONByTimerange from './filterGeoJSONByTimerange'
 import { simplifyTrack } from './simplify-track'
+import { memoizeByLayerId, memoizeCache } from '../../utils'
 
 export const TRACK_TYPE = 'TRACK'
 
@@ -34,22 +34,12 @@ export interface TrackGeneratorConfig extends GeneratorConfig {
   color?: string
 }
 
-const memoizedById: Dictionary<Dictionary<(...args: any[]) => any>> = {}
-const memoizeById = (id: string, fun: (...args: any[]) => any) => {
-  if (memoizedById[id] === undefined) {
-    memoizedById[id] = {}
-  }
-  if (!memoizedById[id][fun.name]) {
-    memoizedById[id][fun.name] = memoizeOne(fun)
-  }
-  return memoizedById[id][fun.name]
-}
-
 const simplifyTrackWithZoomLevel = (
   data: FeatureCollection,
   zoomLoadLevel: number
 ): FeatureCollection => {
   const s = mapZoomToMinPosΔ(zoomLoadLevel)
+  console.log(zoomLoadLevel, s)
   const simplifiedData = simplifyTrack(data as FeatureCollection<LineString>, s)
   return simplifiedData
 }
@@ -77,14 +67,14 @@ class TrackGenerator {
     }
 
     if (config.zoomLoadLevel) {
-      source.data = memoizedById[config.id].simplifyTrackWithZoomLevel(
+      source.data = memoizeCache[config.id].simplifyTrackWithZoomLevel(
         source.data,
         config.zoomLoadLevel
       )
     }
 
     if (config.start && config.end) {
-      source.data = memoizedById[config.id].filterByTimerange(source.data, config.start, config.end)
+      source.data = memoizeCache[config.id].filterByTimerange(source.data, config.start, config.end)
     }
 
     return [source]
@@ -102,8 +92,7 @@ class TrackGenerator {
   }
 
   getStyle = (config: TrackGeneratorConfig) => {
-    memoizeById(config.id, simplifyTrackWithZoomLevel)
-    memoizeById(config.id, filterByTimerange)
+    memoizeByLayerId(config.id, simplifyTrackWithZoomLevel, filterByTimerange)
     return {
       id: config.id,
       sources: this._getStyleSources(config),
