@@ -31,6 +31,7 @@ const mapZoomToMinPosΔ = (zoomLoadLevel: number) => {
 
 export interface TrackGeneratorConfig extends GeneratorConfig {
   data: FeatureCollection
+  simplify?: boolean
   color?: string
 }
 
@@ -65,7 +66,7 @@ class TrackGenerator {
       data: config.data || defaultGeoJSON,
     }
 
-    if (config.zoomLoadLevel) {
+    if (config.zoomLoadLevel && config.simplify) {
       source.data = memoizeCache[config.id].simplifyTrackWithZoomLevel(
         source.data,
         config.zoomLoadLevel
