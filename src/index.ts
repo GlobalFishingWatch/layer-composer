@@ -13,8 +13,6 @@ export {
   TYPES,
   HEATMAP_GEOM_TYPES,
   HEATMAP_COLOR_RAMPS,
-  getVesselEventsGeojson,
-  simplifyTrack,
 } from './layer-composer/generators'
 
 export { default as sort, convertLegacyGroups } from './sort'
