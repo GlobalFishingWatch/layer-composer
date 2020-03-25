@@ -3,6 +3,7 @@ import { FeatureCollection, Point } from 'geojson'
 import { GeoJSONSourceRaw } from 'mapbox-gl'
 import { Dictionary } from 'types'
 import { DEFAULT_LANDMASS_COLOR } from '../basemap/basemap-layers'
+import { memoizeByLayerId, memoizeCache } from '../../utils'
 
 export const VESSEL_EVENTS_TYPE = 'VESSEL_EVENTS'
 
@@ -13,8 +14,33 @@ interface CurrentEvent {
   }
 }
 
+type AuthorizationOptions = 'authorized' | 'partially' | 'unmatched'
+
+type RawEvent = {
+  id: string
+  type: string
+  position: {
+    lng?: number
+    lon?: number
+    lat: number
+  }
+  start: number
+  encounter?: {
+    authorized: boolean
+    authorizationStatus: AuthorizationOptions
+  }
+}
+
+const EVENTS_COLORS: Dictionary<string> = {
+  encounter: '#FAE9A0',
+  partially: '#F59E84',
+  unmatched: '#CE2C54',
+  loitering: '#cfa9f9',
+  port: '#99EEFF',
+}
+
 export interface VesselEventsGeneratorConfig extends GeneratorConfig {
-  data: FeatureCollection
+  data: RawEvent[]
   currentEvent?: CurrentEvent
 }
 
@@ -51,7 +77,9 @@ class VesselsEventsGenerator {
       return []
     }
 
-    let newData: FeatureCollection = { ...data }
+    const geojson = memoizeCache[config.id].getVesselEventsGeojson(data)
+
+    let newData: FeatureCollection = { ...geojson }
     if (config.currentEvent) {
       newData = this._setActiveEvent(newData, config.currentEvent)
     }
@@ -109,6 +137,7 @@ class VesselsEventsGenerator {
   }
 
   getStyle = (config: VesselEventsGeneratorConfig) => {
+    memoizeByLayerId(config.id, getVesselEventsGeojson)
     return {
       id: config.id,
       sources: this._getStyleSources(config),
@@ -118,31 +147,6 @@ class VesselsEventsGenerator {
 }
 
 export default VesselsEventsGenerator
-
-type AuthorizationOptions = 'authorized' | 'partially' | 'unmatched'
-
-type RawEvent = {
-  id: string
-  type: string
-  position: {
-    lng?: number
-    lon?: number
-    lat: number
-  }
-  start: number
-  encounter?: {
-    authorized: boolean
-    authorizationStatus: AuthorizationOptions
-  }
-}
-
-const EVENTS_COLORS: Dictionary<string> = {
-  encounter: '#FAE9A0',
-  partially: '#F59E84',
-  unmatched: '#CE2C54',
-  loitering: '#cfa9f9',
-  port: '#99EEFF',
-}
 
 const getEncounterAuthColor = (authorizationStatus: AuthorizationOptions) => {
   switch (authorizationStatus) {

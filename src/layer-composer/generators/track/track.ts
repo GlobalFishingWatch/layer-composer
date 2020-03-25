@@ -1,6 +1,6 @@
 import { scaleLinear, scalePow } from 'd3-scale'
 import { FeatureCollection, LineString } from 'geojson'
-import { GeneratorConfig, Dictionary } from 'layer-composer/types'
+import { GeneratorConfig } from 'layer-composer/types'
 // TODO custom "augmented" GeoJSON type?
 // see https://github.com/yagajs/generic-geojson/blob/master/index.d.ts
 import filterGeoJSONByTimerange from './filterGeoJSONByTimerange'
@@ -39,7 +39,6 @@ const simplifyTrackWithZoomLevel = (
   zoomLoadLevel: number
 ): FeatureCollection => {
   const s = mapZoomToMinPosΔ(zoomLoadLevel)
-  console.log(zoomLoadLevel, s)
   const simplifiedData = simplifyTrack(data as FeatureCollection<LineString>, s)
   return simplifiedData
 }
