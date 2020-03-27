@@ -7,13 +7,6 @@ import { memoizeByLayerId, memoizeCache } from '../../utils'
 
 export const VESSEL_EVENTS_TYPE = 'VESSEL_EVENTS'
 
-interface CurrentEvent {
-  position: {
-    lat: number
-    lng: number
-  }
-}
-
 type AuthorizationOptions = 'authorized' | 'partially' | 'unmatched'
 
 type RawEvent = {
@@ -41,24 +34,18 @@ const EVENTS_COLORS: Dictionary<string> = {
 
 export interface VesselEventsGeneratorConfig extends GeneratorConfig {
   data: RawEvent[]
-  currentEvent?: CurrentEvent
+  currentEventId?: string
 }
 
 class VesselsEventsGenerator {
   type = VESSEL_EVENTS_TYPE
 
-  _setActiveEvent = (data: FeatureCollection, currentEvent: CurrentEvent): FeatureCollection => {
+  _setActiveEvent = (data: FeatureCollection, currentEventId: string): FeatureCollection => {
     const featureCollection = { ...data }
     featureCollection.features = featureCollection.features.map((feature) => {
       const newFeature = { ...feature }
-      const geom = feature.geometry as Point
-      const featureLng = geom.coordinates[0]
-      const featureLat = geom.coordinates[1]
       newFeature.properties = newFeature.properties || {}
-      newFeature.properties.active =
-        currentEvent !== null &&
-        featureLng === currentEvent.position.lng &&
-        featureLat === currentEvent.position.lat
+      newFeature.properties.active = currentEventId && newFeature.properties.id === currentEventId
       return newFeature
     })
     featureCollection.features.sort((a, b) => {
@@ -80,8 +67,8 @@ class VesselsEventsGenerator {
     const geojson = memoizeCache[config.id].getVesselEventsGeojson(data)
 
     let newData: FeatureCollection = { ...geojson }
-    if (config.currentEvent) {
-      newData = this._setActiveEvent(newData, config.currentEvent)
+    if (config.currentEventId) {
+      newData = this._setActiveEvent(newData, config.currentEventId)
     }
 
     if (config.start && config.end) {
@@ -179,6 +166,7 @@ export const getVesselEventsGeojson = (trackEvents: RawEvent[] | null): FeatureC
     return {
       type: 'Feature',
       properties: {
+        id: event.id,
         type: event.type,
         timestamp: event.start,
         authorized,
