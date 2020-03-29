@@ -1,12 +1,52 @@
-import { Layer, AnySourceImpl } from 'mapbox-gl'
+import { Layer, AnySourceImpl, Style } from 'mapbox-gl'
 
 export interface Dictionary<T> {
   [key: string]: T
 }
 
-// This what is returned by LayerComposer.getGLStyle
+/**
+ * Defines groups for layer order
+ */
+export enum Group {
+  Background = 'background', // Solid bg color
+  Basemap = 'basemap', // Satellite tiles
+  Heatmap = 'heatmap', // Fill/gradient-based heatmaps
+  BasemapFill = 'basemapFill', // Landmass
+  OutlinePolygons = 'outlinePolygons', // Conbtext layers with an outlined/hollow style such as EEZ, RFMOs, etc
+  Default = 'default', // Default stack position when f0roup is not specified
+  Point = 'point', // Events, etc
+  Track = 'track', // Tracks
+  BasemapForeground = 'BasemapForeground', // Graticule labels, bathymetry labels, etc
+  Label = 'label', // All non-basemap layers labels
+  Overlay = 'overlay', // Popups, ruler tool, etc
+}
+
+/**
+ * Set of additional metadata properties added by LayerCompoeser for later use in transformations or to be consumed directly ie (group, legend, etc)
+ */
+export interface ExtendedLayerMeta {
+  group?: Group
+}
+
+/**
+ * A standard Mapbox GL Layer with layer-composer specific metadata
+ */
+export interface ExtendedLayer extends Layer {
+  metadata?: ExtendedLayerMeta
+}
+
+/**
+ * A standard Mapbox GL Style with leyer-composer specific metadata
+ */
+export interface ExtendedStyle extends Style {
+  layers?: ExtendedLayer[]
+}
+
+/**
+ * This is what the layer composer main `getGLStyle` returns. Gives a Mapbox GL style and an array of promises for layers that don't resolve synchronously.
+ */
 export interface LayerComposerStyles {
-  style: any
+  style: ExtendedStyle
   promises?: Promise<any>[]
 }
 
@@ -22,34 +62,7 @@ export interface LayerComposerOptions {
 export interface GeneratorStyles {
   id: string
   sources: AnySourceImpl[]
-  layers: Layer[]
+  layers: ExtendedLayer[]
   promise?: Promise<GeneratorStyles>
   promises?: Promise<GeneratorStyles>[]
-}
-
-export interface Generator {
-  type: string
-  getStyle: (layer: GeneratorConfig) => GeneratorStyles
-}
-
-export interface GlobalGeneratorConfig {
-  start?: string
-  end?: string
-  zoom?: number
-  zoomLoadLevel?: number
-}
-
-export interface GeneratorConfig extends GlobalGeneratorConfig {
-  id: string
-  type:
-    | 'BACKGROUND'
-    | 'BASEMAP'
-    | 'CARTO_POLYGONS'
-    | 'GL_STYLES'
-    | 'HEATMAP'
-    | 'TRACK'
-    | 'VESSEL_EVENTS'
-    | string
-  visible?: boolean
-  opacity?: number
 }

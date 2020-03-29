@@ -1,13 +1,10 @@
 import { scaleLinear, scalePow } from 'd3-scale'
 import { FeatureCollection, LineString } from 'geojson'
-import { GeneratorConfig } from 'layer-composer/types'
-// TODO custom "augmented" GeoJSON type?
-// see https://github.com/yagajs/generic-geojson/blob/master/index.d.ts
+import { Group } from 'layer-composer/types'
+import { Type, TrackGeneratorConfig } from '../types'
 import filterGeoJSONByTimerange from './filterGeoJSONByTimerange'
 import { simplifyTrack } from './simplify-track'
 import { memoizeByLayerId, memoizeCache } from '../../utils'
-
-export const TRACK_TYPE = 'TRACK'
 
 const mapZoomToMinPosΔ = (zoomLoadLevel: number) => {
   // first normalize and invert z level
@@ -29,12 +26,6 @@ const mapZoomToMinPosΔ = (zoomLoadLevel: number) => {
   return minPosΔ
 }
 
-export interface TrackGeneratorConfig extends GeneratorConfig {
-  data: FeatureCollection
-  simplify?: boolean
-  color?: string
-}
-
 const simplifyTrackWithZoomLevel = (
   data: FeatureCollection,
   zoomLoadLevel: number
@@ -53,7 +44,7 @@ const filterByTimerange = (data: FeatureCollection, start: string, end: string) 
 }
 
 class TrackGenerator {
-  type = TRACK_TYPE
+  type = Type.Track
 
   _getStyleSources = (config: TrackGeneratorConfig) => {
     const defaultGeoJSON: FeatureCollection = {
@@ -87,6 +78,9 @@ class TrackGenerator {
       source: config.id,
       layout: {},
       paint: { 'line-color': config.color || 'hsl(100, 100%, 55%)' },
+      metadata: {
+        group: Group.Track,
+      },
     }
     return [layer]
   }
