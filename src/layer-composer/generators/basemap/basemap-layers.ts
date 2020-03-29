@@ -1,4 +1,4 @@
-import { Group, Dictionary } from '../../../types'
+import { Group, Dictionary } from '../../types'
 import { Layer, AnySourceImpl } from 'mapbox-gl'
 
 export const BASEMAPS = {

@@ -1,14 +1,8 @@
-import { GeneratorConfig, GeneratorStyles } from 'layer-composer/types'
+import { Type, GeneratorConfig } from '../types'
 import { layers, sources } from './basemap-layers'
 
-export const BASEMAP_TYPE = 'BASEMAP'
-
-// export interface BasemapGeneratorConfig extends GeneratorConfig {
-//   basemapType?: string
-// }
-
 class BasemapGenerator {
-  type = BASEMAP_TYPE
+  type = Type.Basemap
 
   _getStyleSources = (config: GeneratorConfig) => {
     const layer = layers[config.id]

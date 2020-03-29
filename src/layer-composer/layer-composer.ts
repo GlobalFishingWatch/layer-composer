@@ -1,12 +1,13 @@
+import { Style, AnySourceImpl, Layer } from 'mapbox-gl'
 import Generators from './generators'
-import { flatObjectArrays, flatObjectToArray } from './utils'
+import { flatObjectArrays, layersDictToArray } from './utils'
+import { Dictionary, LayerComposerStyles, LayerComposerOptions, GeneratorStyles } from './types'
 import {
-  LayerComposerStyles,
-  LayerComposerOptions,
-  GeneratorStyles,
+  Generator,
   GeneratorConfig,
   GlobalGeneratorConfig,
-} from './types'
+  AnyGeneratorConfig,
+} from './generators/types'
 
 export const DEFAULT_CONFIG = {
   version: 8,
@@ -19,8 +20,11 @@ class LayerComposer {
   version: number
   glyphs: string
   sprite: string
-  generators: { [key: string]: any }
-  latestGenerated: any
+  generators: Dictionary<Generator>
+  latestGenerated: {
+    sourcesStyle: Dictionary<AnySourceImpl[]>
+    layersStyle: Dictionary<Layer[]>
+  }
 
   constructor(params?: LayerComposerOptions) {
     this.version = (params && params.version) || DEFAULT_CONFIG.version
@@ -29,11 +33,11 @@ class LayerComposer {
     this.generators = (params && params.generators) || Generators
 
     // Used to cache results and always return the latest style in promises
-    this.latestGenerated = {}
+    this.latestGenerated = { sourcesStyle: {}, layersStyle: {} }
   }
 
   // Sources dictionary for id and array of sources per layer
-  _getGeneratorSources = (layers: GeneratorStyles[]) => {
+  _getGeneratorSources = (layers: GeneratorStyles[]): Dictionary<AnySourceImpl[]> => {
     return Object.fromEntries(
       layers
         .filter((layer) => layer.sources && layer.sources.length)
@@ -42,7 +46,7 @@ class LayerComposer {
   }
 
   // Same here for layers
-  _getGeneratorLayers = (layers: GeneratorStyles[]) => {
+  _getGeneratorLayers = (layers: GeneratorStyles[]): Dictionary<Layer[]> => {
     return Object.fromEntries(
       layers
         .filter((layer) => layer.layers && layer.layers.length)
@@ -96,19 +100,19 @@ class LayerComposer {
   }
 
   // Latest step in the workflow which compose the output needed for mapbox-gl
-  _getStyleJson(sources = {}, layers = {}) {
+  _getStyleJson(sources = {}, layers = {}): Style {
     return {
       version: this.version,
       glyphs: this.glyphs,
       sprite: this.sprite,
       sources: flatObjectArrays(sources),
-      layers: flatObjectToArray(layers),
+      layers: layersDictToArray(layers),
     }
   }
 
   // Main method of the library which uses the privates one to compose the style
   getGLStyle = (
-    layers: GeneratorConfig[],
+    layers: AnyGeneratorConfig[],
     globalGeneratorConfig: GlobalGeneratorConfig = {}
   ): LayerComposerStyles => {
     if (!layers) {

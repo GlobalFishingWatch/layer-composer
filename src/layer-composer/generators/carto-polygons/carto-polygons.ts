@@ -1,24 +1,14 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import layersDirectory from './carto-polygons-layers'
-import { GeneratorConfig, GeneratorStyles } from 'layer-composer/types'
+import { GeneratorStyles } from 'layer-composer/types'
+import { Type, CartoPolygonsGeneratorConfig } from '../types'
 
-export const CARTO_POLYGONS_TYPE = 'CARTO_POLYGONS'
 export const CARTO_FISHING_MAP_API = 'https://carto.globalfishingwatch.org/user/admin/api/v1/map'
 
 interface CartoLayerOptions {
   id: string
   sql: string
   baseUrl: string
-}
-
-export interface CartoPolygonsGeneratorConfig extends GeneratorConfig {
-  baseUrl?: string
-  selectedFeatures?: any
-  color?: string
-  fillColor?: any
-  strokeColor?: string
-  strokeWidth?: number
-  radius?: number
 }
 
 const getCartoLayergroupId = async (options: CartoLayerOptions) => {
@@ -41,7 +31,7 @@ const getCartoLayergroupId = async (options: CartoLayerOptions) => {
 }
 
 class CartoPolygonsGenerator {
-  type = CARTO_POLYGONS_TYPE
+  type = Type.CartoPolygons
   tilesCacheByid: { [key: string]: any } = {}
   baseUrl: string
 

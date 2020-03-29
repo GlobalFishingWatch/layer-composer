@@ -1,3 +1,4 @@
+import { Layer } from 'mapbox-gl'
 import { Dictionary } from 'layer-composer/types'
 
 export const flatObjectArrays = (object = {} as any) => {
@@ -18,8 +19,8 @@ export const flatObjectArrays = (object = {} as any) => {
   return objectParsed
 }
 
-export const flatObjectToArray = (object = {}) =>
-  Object.values(object).flatMap((layerGroup) => layerGroup)
+export const layersDictToArray = (layers: Dictionary<Layer>) =>
+  Object.values(layers).flatMap((layerGroup) => layerGroup)
 
 type AnyFunc = (...args: any[]) => any
 export const memoizeCache: Dictionary<Dictionary<AnyFunc>> = {}

@@ -1,5 +1,5 @@
 import { Style, Layer } from 'mapbox-gl'
-import { Dictionary, ExtendedStyle, ExtendedLayer, Group } from '../types'
+import { Dictionary, ExtendedStyle, ExtendedLayer, Group } from '../layer-composer/types'
 
 const GROUP_ORDER = [
   Group.Background,
@@ -8,8 +8,8 @@ const GROUP_ORDER = [
   Group.BasemapFill,
   Group.OutlinePolygons,
   Group.Default,
-  Group.Point,
   Group.Track,
+  Group.Point,
   Group.BasemapForeground,
   Group.Label,
   Group.Overlay,
