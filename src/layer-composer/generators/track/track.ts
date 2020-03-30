@@ -1,6 +1,6 @@
 import { scaleLinear, scalePow } from 'd3-scale'
 import { FeatureCollection, LineString } from 'geojson'
-import { Group } from 'layer-composer/types'
+import { Group } from '../../types'
 import { Type, TrackGeneratorConfig } from '../types'
 import filterGeoJSONByTimerange from './filterGeoJSONByTimerange'
 import { simplifyTrack } from './simplify-track'

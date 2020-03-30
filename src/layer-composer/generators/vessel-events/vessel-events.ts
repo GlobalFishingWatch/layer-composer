@@ -1,4 +1,4 @@
-import { Group } from 'layer-composer/types'
+import { Group } from '../../types'
 import { Type, VesselEventsGeneratorConfig, RawEvent, AuthorizationOptions } from '../types'
 import { FeatureCollection } from 'geojson'
 import { GeoJSONSourceRaw } from 'mapbox-gl'

@@ -1,20 +1,20 @@
 import LayerComposer from '../..'
-import { TYPES } from '../'
+import { Type } from '../types'
 import { validate as mapboxStyleValidator } from '@mapbox/mapbox-gl-style-spec'
 
 test('check valid style.json format', async () => {
   const layerComposer = new LayerComposer()
   const { style } = layerComposer.getGLStyle([
     {
-      type: TYPES.BASEMAP,
+      type: Type.Basemap,
       id: 'satellite',
     },
     {
-      type: TYPES.BACKGROUND,
+      type: Type.Background,
       id: 'graticules',
     },
     {
-      type: TYPES.BASEMAP,
+      type: Type.Basemap,
       id: 'landmass',
     },
   ])
