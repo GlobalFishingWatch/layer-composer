@@ -1,9 +1,10 @@
 import { GeneratorConfig } from 'layer-composer/types'
-import { FeatureCollection, Point } from 'geojson'
+import { FeatureCollection } from 'geojson'
 import { GeoJSONSourceRaw } from 'mapbox-gl'
 import { Dictionary } from 'types'
 import { DEFAULT_LANDMASS_COLOR } from '../basemap/basemap-layers'
 import { memoizeByLayerId, memoizeCache } from '../../utils'
+import memoizeOne from 'memoize-one'
 
 export const VESSEL_EVENTS_TYPE = 'VESSEL_EVENTS'
 
@@ -64,7 +65,7 @@ class VesselsEventsGenerator {
       return []
     }
 
-    const geojson = memoizeCache[config.id].getVesselEventsGeojson(data)
+    const geojson = memoizeCache[config.id].getVesselEventsGeojson(data) as FeatureCollection
 
     let newData: FeatureCollection = { ...geojson }
     if (config.currentEventId) {
@@ -124,7 +125,9 @@ class VesselsEventsGenerator {
   }
 
   getStyle = (config: VesselEventsGeneratorConfig) => {
-    memoizeByLayerId(config.id, getVesselEventsGeojson)
+    memoizeByLayerId(config.id, {
+      getVesselEventsGeojson: memoizeOne(getVesselEventsGeojson),
+    })
     return {
       id: config.id,
       sources: this._getStyleSources(config),

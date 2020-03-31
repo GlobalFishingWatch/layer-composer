@@ -1,4 +1,3 @@
-import memoizeOne from 'memoize-one'
 import { Dictionary } from 'layer-composer/types'
 
 export const flatObjectArrays = (object = {} as any) => {
@@ -22,15 +21,10 @@ export const flatObjectArrays = (object = {} as any) => {
 export const flatObjectToArray = (object = {}) =>
   Object.values(object).flatMap((layerGroup) => layerGroup)
 
-export const memoizeCache: Dictionary<Dictionary<(...args: any[]) => any>> = {}
-export const memoizeByLayerId = (id: string, ...functions: ((...args: any[]) => any)[]) => {
-  if (memoizeCache[id] === undefined) {
-    memoizeCache[id] = {}
+type AnyFunc = (...args: any[]) => any
+export const memoizeCache: Dictionary<Dictionary<AnyFunc>> = {}
+export const memoizeByLayerId = (id: string, dict: Dictionary<AnyFunc>) => {
+  if (!memoizeCache[id]) {
+    memoizeCache[id] = dict
   }
-  functions.forEach((fun) => {
-    if (!memoizeCache[id][fun.name]) {
-      memoizeCache[id][fun.name] = memoizeOne(fun)
-    }
-  })
-  return memoizeCache[id]
 }

@@ -1,5 +1,6 @@
 import { scaleLinear, scalePow } from 'd3-scale'
 import { FeatureCollection, LineString } from 'geojson'
+import memoizeOne from 'memoize-one'
 import { GeneratorConfig } from 'layer-composer/types'
 // TODO custom "augmented" GeoJSON type?
 // see https://github.com/yagajs/generic-geojson/blob/master/index.d.ts
@@ -92,7 +93,10 @@ class TrackGenerator {
   }
 
   getStyle = (config: TrackGeneratorConfig) => {
-    memoizeByLayerId(config.id, simplifyTrackWithZoomLevel, filterByTimerange)
+    memoizeByLayerId(config.id, {
+      simplifyTrackWithZoomLevel: memoizeOne(simplifyTrackWithZoomLevel),
+      filterByTimerange: memoizeOne(filterByTimerange),
+    })
     return {
       id: config.id,
       sources: this._getStyleSources(config),
