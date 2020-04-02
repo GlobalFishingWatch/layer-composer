@@ -9,9 +9,11 @@ import paintByGeomType from './heatmap-layers-paint'
 import memoizeOne from 'memoize-one'
 
 export const HEATMAP_TYPE = 'HEATMAP'
-const FAST_TILES_KEY = '__fast_tiles__'
-const DEFAULT_FAST_TILES_API = 'https://fst-tiles-jzzp2ui3wq-uc.a.run.app/v1/'
-const BASE_WORKER_URL = `https://${FAST_TILES_KEY}/{z}/{x}/{y}`
+const API_TILES_URL = 'https://fst-tiles-jzzp2ui3wq-uc.a.run.app/v1'
+const API_ENDPOINTS = {
+  tiles: 'tile/heatmap/{z}/{x}/{y}',
+  statistics: 'statistics',
+}
 
 export const toDays = (date: string) => {
   return Math.floor(new Date(date).getTime() / 1000 / 60 / 60 / 24)
@@ -99,7 +101,7 @@ class HeatmapGenerator {
     median: 2,
   }
 
-  constructor({ fastTilesAPI = DEFAULT_FAST_TILES_API }) {
+  constructor({ fastTilesAPI = API_TILES_URL }) {
     this.fastTilesAPI = fastTilesAPI
   }
 
@@ -123,28 +125,30 @@ class HeatmapGenerator {
     return serverSideFilters
   }
 
-  _fetchStats = memoizeOne((endpoint: any, tileset: any, zoom: any, serverSideFilters: any) => {
-    this.loadingStats = true
-    const statsUrl = new URL(`${endpoint}${tileset}/statistics/${zoom}`)
-    if (serverSideFilters) {
-      statsUrl.searchParams.set('filters', serverSideFilters)
-    }
-    return fetch(statsUrl.toString())
-      .then((r) => r.json())
-      .then((r) => {
-        // prevent values being exactly the same to avoid a style error
-        const min = r.min - 0.001
-        const median = r.median
-        const max = r.max + 0.001
-        this.stats = {
-          min,
-          median,
-          max,
-        }
+  _fetchStats = memoizeOne(
+    (endpoint: string, tileset: string, zoom: number, serverSideFilters: any) => {
+      this.loadingStats = true
+      const statsUrl = new URL(`${endpoint}/${tileset}/${API_ENDPOINTS.statistics}/${zoom}`)
+      if (serverSideFilters) {
+        statsUrl.searchParams.set('filters', serverSideFilters)
+      }
+      return fetch(statsUrl.toString())
+        .then((r) => r.json())
+        .then((r) => {
+          // prevent values being exactly the same to avoid a style error
+          const min = r.min - 0.001
+          const median = r.median
+          const max = r.max + 0.001
+          this.stats = {
+            min,
+            median,
+            max,
+          }
 
-        this.loadingStats = false
-      })
-  })
+          this.loadingStats = false
+        })
+    }
+  )
 
   _getStyleSources = (layer: HeatmapGeneratorConfig) => {
     if (!layer.start || !layer.end || !layer.tileset) {
@@ -154,10 +158,9 @@ class HeatmapGenerator {
     }
     const geomType = layer.geomType || HEATMAP_GEOM_TYPES.GRIDDED
 
-    const url = new URL(BASE_WORKER_URL)
-    url.searchParams.set('tileset', layer.tileset)
+    const tilesUrl = `${this.fastTilesAPI}/${layer.tileset}/${API_ENDPOINTS.tiles}`
+    const url = new URL(tilesUrl)
     url.searchParams.set('geomType', geomType)
-    url.searchParams.set('fastTilesAPI', this.fastTilesAPI)
     url.searchParams.set('quantizeOffset', this.quantizeOffset.toString())
     url.searchParams.set('delta', this.delta.toString())
 
@@ -180,7 +183,7 @@ class HeatmapGenerator {
     return [
       {
         id: layer.id,
-        type: 'vector' as const,
+        type: 'temporalgrid' as const,
         tiles: [decodeURI(url.toString())],
       },
     ]
@@ -281,7 +284,7 @@ class HeatmapGenerator {
       {
         id: layer.id,
         source: layer.id,
-        'source-layer': layer.tileset,
+        'source-layer': 'temporalgrid',
         type: HEATMAP_GEOM_TYPES_GL_TYPES[geomType],
         layout: {
           visibility,
