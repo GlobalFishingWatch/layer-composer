@@ -4,7 +4,6 @@ import debounce from 'lodash/debounce'
 import zip from 'lodash/zip'
 import { Group } from '../../types'
 import { Type, HeatmapGeneratorConfig, HeatmapColorRamp, HeatmapColorRampColors } from '../types'
-import { HeatmapGeoms } from 'fourwings-worker/types'
 import paintByGeomType from './heatmap-layers-paint'
 import memoizeOne from 'memoize-one'
 
@@ -20,6 +19,11 @@ export const toDays = (date: string) => {
 }
 
 export const DEFAULT_QUANTIZE_OFFSET = toDays('2019-01-01T00:00:00.000Z')
+
+export type Geoms = 'blob' | 'gridded' | 'extruded'
+export type HeatmapGeoms = {
+  [key: string]: Geoms
+}
 
 export const HEATMAP_GEOM_TYPES: HeatmapGeoms = {
   BLOB: 'blob',
