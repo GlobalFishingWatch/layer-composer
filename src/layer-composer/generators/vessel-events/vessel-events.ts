@@ -1,29 +1,11 @@
-import { GeneratorConfig } from 'layer-composer/types'
+import { Group } from '../../types'
+import { Type, VesselEventsGeneratorConfig, RawEvent, AuthorizationOptions } from '../types'
 import { FeatureCollection } from 'geojson'
 import { GeoJSONSourceRaw } from 'mapbox-gl'
-import { Dictionary } from 'types'
+import { Dictionary } from '../../types'
 import { DEFAULT_LANDMASS_COLOR } from '../basemap/basemap-layers'
 import { memoizeByLayerId, memoizeCache } from '../../utils'
 import memoizeOne from 'memoize-one'
-
-export const VESSEL_EVENTS_TYPE = 'VESSEL_EVENTS'
-
-type AuthorizationOptions = 'authorized' | 'partially' | 'unmatched'
-
-type RawEvent = {
-  id: string
-  type: string
-  position: {
-    lng?: number
-    lon?: number
-    lat: number
-  }
-  start: number
-  encounter?: {
-    authorized: boolean
-    authorizationStatus: AuthorizationOptions
-  }
-}
 
 const EVENTS_COLORS: Dictionary<string> = {
   encounter: '#FAE9A0',
@@ -33,13 +15,8 @@ const EVENTS_COLORS: Dictionary<string> = {
   port: '#99EEFF',
 }
 
-export interface VesselEventsGeneratorConfig extends GeneratorConfig {
-  data: RawEvent[]
-  currentEventId?: string
-}
-
 class VesselsEventsGenerator {
-  type = VESSEL_EVENTS_TYPE
+  type = Type.VesselEvents
 
   _setActiveEvent = (data: FeatureCollection, currentEventId: string): FeatureCollection => {
     const featureCollection = { ...data }
@@ -109,6 +86,9 @@ class VesselsEventsGenerator {
           'circle-stroke-color': [...activeFilter, 'rgba(0, 193, 231, 1)', DEFAULT_LANDMASS_COLOR],
           'circle-radius': [...activeFilter, 12, 5],
         },
+        metadata: {
+          group: Group.Point,
+        },
       },
       {
         id: 'vessel_events',
@@ -118,6 +98,9 @@ class VesselsEventsGenerator {
           'icon-allow-overlap': true,
           'icon-image': ['get', 'icon'],
           'icon-size': [...activeFilter, 1, 0],
+        },
+        metadata: {
+          group: Group.Point,
         },
       },
     ]

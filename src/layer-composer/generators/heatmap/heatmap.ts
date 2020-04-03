@@ -2,8 +2,8 @@ import flatten from 'lodash/flatten'
 import compact from 'lodash/compact'
 import debounce from 'lodash/debounce'
 import zip from 'lodash/zip'
-import { Group } from '../../../types'
-import { GeneratorConfig } from 'layer-composer/types'
+import { Group } from '../../types'
+import { Type, HeatmapGeneratorConfig, HeatmapColorRamp, HeatmapColorRampColors } from '../types'
 import { HeatmapGeoms } from 'fourwings-worker/types'
 import paintByGeomType from './heatmap-layers-paint'
 import memoizeOne from 'memoize-one'
@@ -15,22 +15,6 @@ const BASE_WORKER_URL = `https://${FAST_TILES_KEY}/{z}/{x}/{y}`
 
 export const toDays = (date: string) => {
   return Math.floor(new Date(date).getTime() / 1000 / 60 / 60 / 24)
-}
-
-export interface HeatmapGeneratorConfig extends GeneratorConfig {
-  start: string
-  end: string
-  zoom: number
-  delta?: number
-  tileset: string
-  geomType: string
-  singleFrame?: boolean
-  fetchStats?: boolean
-  serverSideFilter?: string
-  updateColorRampOnTimeChange?: boolean
-  quantizeOffset?: number
-  colorRamp: ColorRamps
-  colorRampMult: number
 }
 
 export const DEFAULT_QUANTIZE_OFFSET = toDays('2019-01-01T00:00:00.000Z')
@@ -51,19 +35,12 @@ export const HEATMAP_GEOM_TYPES_GL_TYPES: HeatmapGeomGL = {
   [HEATMAP_GEOM_TYPES.EXTRUDED]: 'fill-extrusion',
 }
 
-export type ColorRamps = 'fishing' | 'presence' | 'reception'
-export type HeatmapColorRamp = {
-  [key: string]: ColorRamps
-}
 export const HEATMAP_COLOR_RAMPS: HeatmapColorRamp = {
   FISHING: 'fishing',
   PRESENCE: 'presence',
   RECEPTION: 'reception',
 }
 
-export type HeatmapColorRampColors = {
-  [key in string]: string[]
-}
 const HEATMAP_COLOR_RAMPS_RAMPS: HeatmapColorRampColors = {
   [HEATMAP_COLOR_RAMPS.FISHING]: [
     'rgba(12, 39, 108, 0)',
@@ -110,7 +87,7 @@ const toQuantizedDays = (date: string, quantizeOffset: number) => {
 }
 
 class HeatmapGenerator {
-  type = HEATMAP_TYPE
+  type = Type.Heatmap
   loadingStats = false
   fastTilesAPI: string
   quantizeOffset = 0

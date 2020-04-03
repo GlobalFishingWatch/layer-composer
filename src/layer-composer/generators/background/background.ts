@@ -1,23 +1,11 @@
-import { BackgroundPaint, BackgroundLayout } from 'mapbox-gl'
-import { ExtendedLayer, Group } from '../../../types'
-import { GeneratorConfig } from 'layer-composer/types'
-
-export const BACKGROUND_TYPE = 'BACKGROUND'
-
-export interface BackgroundGeneratorConfig extends GeneratorConfig {
-  color?: string
-}
-
-interface BackgroundLayer extends ExtendedLayer {
-  type: 'background'
-  layout: BackgroundLayout
-  paint: BackgroundPaint
-}
+import { Layer } from 'mapbox-gl'
+import { Group } from '../../types'
+import { Type, BackgroundGeneratorConfig } from '../types'
 
 class BackgroundGenerator {
-  type = BACKGROUND_TYPE
+  type = Type.Background
 
-  _getStyleLayers = (layer: BackgroundGeneratorConfig): BackgroundLayer[] => [
+  _getStyleLayers = (layer: BackgroundGeneratorConfig): Layer[] => [
     {
       id: 'background',
       type: 'background',

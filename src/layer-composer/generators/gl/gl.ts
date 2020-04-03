@@ -1,14 +1,7 @@
-import { GeneratorConfig } from 'layer-composer/types'
-
-export const GL_TYPE = 'GL_STYLES'
-
-export interface GlGeneratorConfig extends GeneratorConfig {
-  sources?: any
-  layers?: any
-}
+import { Type, GlGeneratorConfig } from '../types'
 
 class GlStyleGenerator {
-  type = GL_TYPE
+  type = Type.GL
 
   _getStyleSources = (layer: GlGeneratorConfig) => {
     return layer.sources.map((glSource: any) => ({ id: `${layer.id}`, ...glSource }))
