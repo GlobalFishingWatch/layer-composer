@@ -51,10 +51,12 @@
     "d3-scale": "2.2.2",
     "geojson-vt": "^3.2.1",
     "lodash": "^4.17.15",
-    "mapbox-gl": "^1.7.0",
     "memoize-one": "^5.1.1",
     "pbf": "^3.2.1",
     "vt-pbf": "^3.1.1"
+  },
+  "peerDependencies": {
+    "mapbox-gl": "^1.7.0"
   },
   "devDependencies": {
     "@mapbox/geojsonhint": "^3.0.0",
@@ -89,6 +91,7 @@
     "jest-config": "^24.9.0",
     "lint-staged": "^9.5.0",
     "lodash-es": "^4.17.15",
+    "mapbox-gl": "^1.9.1",
     "prettier": "^1.19.1",
     "react": "^16.12.0",
     "release": "^6.1.0",
