@@ -29,8 +29,7 @@
     "release:patch": "release patch",
     "prebuild": "rimraf ./dist/*",
     "prepublish": "npm run build",
-    "publishdoc": "npm run typedoc && npm run gh-pages",
-    "postinstall": "yarn install --ignore-scripts && yarn build"
+    "publishdoc": "npm run typedoc && npm run gh-pages"
   },
   "husky": {
     "hooks": {
