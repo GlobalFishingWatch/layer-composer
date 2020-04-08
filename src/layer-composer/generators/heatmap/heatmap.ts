@@ -5,7 +5,8 @@ import zip from 'lodash/zip'
 import { Group } from '../../types'
 import { Type, HeatmapGeneratorConfig, HeatmapColorRamp, HeatmapColorRampColors } from '../types'
 import paintByGeomType from './heatmap-layers-paint'
-import memoizeOne from 'memoize-one'
+import mem from 'mem'
+import { memoizeByLayerId, memoizeCache } from '../../utils'
 
 export const HEATMAP_TYPE = 'HEATMAP'
 const API_TILES_URL = 'https://fst-tiles-jzzp2ui3wq-uc.a.run.app/v1'
@@ -129,30 +130,28 @@ class HeatmapGenerator {
     return serverSideFilters
   }
 
-  _fetchStats = memoizeOne(
-    (endpoint: string, tileset: string, zoom: number, serverSideFilters: any) => {
-      this.loadingStats = true
-      const statsUrl = new URL(`${endpoint}/${tileset}/${API_ENDPOINTS.statistics}/${zoom}`)
-      if (serverSideFilters) {
-        statsUrl.searchParams.set('filters', serverSideFilters)
-      }
-      return fetch(statsUrl.toString())
-        .then((r) => r.json())
-        .then((r) => {
-          // prevent values being exactly the same to avoid a style error
-          const min = r.min - 0.001
-          const median = r.median
-          const max = r.max + 0.001
-          this.stats = {
-            min,
-            median,
-            max,
-          }
-
-          this.loadingStats = false
-        })
+  _fetchStats = (tileset: string, zoom: number, serverSideFilters: string) => {
+    this.loadingStats = true
+    const statsUrl = new URL(`${this.fastTilesAPI}/${tileset}/${API_ENDPOINTS.statistics}/${zoom}`)
+    if (serverSideFilters) {
+      statsUrl.searchParams.set('filters', serverSideFilters)
     }
-  )
+    return fetch(statsUrl.toString())
+      .then((r) => r.json())
+      .then((r) => {
+        // prevent values being exactly the same to avoid a style error
+        const min = r.min - 0.001
+        const median = r.median
+        const max = r.max + 0.001
+        this.stats = {
+          min,
+          median,
+          max,
+        }
+
+        this.loadingStats = false
+      })
+  }
 
   _getStyleSources = (layer: HeatmapGeneratorConfig) => {
     if (!layer.start || !layer.end || !layer.tileset) {
@@ -190,6 +189,7 @@ class HeatmapGenerator {
         type: 'temporalgrid' as const,
         tiles: [decodeURI(url.toString())],
         minzoom: 1,
+        maxzoom: 12,
       },
     ]
   }
@@ -305,7 +305,8 @@ class HeatmapGenerator {
   }
 
   _getStyleLayers = (layer: HeatmapGeneratorConfig) => {
-    if (layer.fetchStats !== true) {
+    const zoom = Math.floor(layer.zoom)
+    if (layer.fetchStats !== true || zoom === 0) {
       return { layers: this._getHeatmapLayers(layer) }
     }
     const serverSideFilters = this._getServerSideFilters(
@@ -314,13 +315,8 @@ class HeatmapGenerator {
       layer.end,
       layer.updateColorRampOnTimeChange
     )
-    const statsPromise = this._fetchStats(
-      this.fastTilesAPI,
-      layer.tileset,
-      Math.floor(layer.zoom),
-      serverSideFilters
-    )
 
+    const statsPromise = memoizeCache[layer.id]._fetchStats(layer.tileset, zoom, serverSideFilters)
     const layers = this._getHeatmapLayers(layer)
 
     if (this.loadingStats === false) {
@@ -355,6 +351,11 @@ class HeatmapGenerator {
   _setDelta = debounce(this._updateDelta, 1000)
 
   getStyle = (layer: HeatmapGeneratorConfig) => {
+    memoizeByLayerId(layer.id, {
+      _fetchStats: mem(this._fetchStats, {
+        cacheKey: (arguments_) => arguments_.join(','),
+      }),
+    })
     if (!this.delta) {
       this.delta = getDelta(layer.start, layer.end)
     }
