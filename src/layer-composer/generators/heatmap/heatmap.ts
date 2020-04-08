@@ -189,6 +189,7 @@ class HeatmapGenerator {
         id: layer.id,
         type: 'temporalgrid' as const,
         tiles: [decodeURI(url.toString())],
+        minzoom: 1,
       },
     ]
   }
