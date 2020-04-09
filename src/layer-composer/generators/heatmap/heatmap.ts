@@ -5,7 +5,7 @@ import zip from 'lodash/zip'
 import { Group } from '../../types'
 import { Type, HeatmapGeneratorConfig, HeatmapColorRamp, HeatmapColorRampColors } from '../types'
 import paintByGeomType from './heatmap-layers-paint'
-import mem from 'mem'
+import memoizeOne from 'memoize-one'
 import { memoizeByLayerId, memoizeCache } from '../../utils'
 
 export const HEATMAP_TYPE = 'HEATMAP'
@@ -136,20 +136,21 @@ class HeatmapGenerator {
     if (serverSideFilters) {
       statsUrl.searchParams.set('filters', serverSideFilters)
     }
-    return fetch(statsUrl.toString())
+    return fetch(statsUrl.toString(), { cache: 'force-cache' })
       .then((r) => r.json())
       .then((r) => {
         // prevent values being exactly the same to avoid a style error
         const min = r.min - 0.001
         const median = r.median
         const max = r.max + 0.001
-        this.stats = {
+        const stats = {
           min,
           median,
           max,
         }
-
+        this.stats = stats
         this.loadingStats = false
+        return stats
       })
   }
 
@@ -352,9 +353,7 @@ class HeatmapGenerator {
 
   getStyle = (layer: HeatmapGeneratorConfig) => {
     memoizeByLayerId(layer.id, {
-      _fetchStats: mem(this._fetchStats, {
-        cacheKey: (arguments_) => arguments_.join(','),
-      }),
+      _fetchStats: memoizeOne(this._fetchStats),
     })
     if (!this.delta) {
       this.delta = getDelta(layer.start, layer.end)
