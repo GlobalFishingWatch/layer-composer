@@ -79,6 +79,13 @@ export interface TrackGeneratorConfig extends GeneratorConfig {
    * Sets the color of the map background in any format supported by Mapbox GL, see https://docs.mapbox.com/mapbox-gl-js/style-spec/types/#color
    */
   color?: string
+  /**
+   * Sets a portion of the track to highlight visually
+   */
+  highlightedTime?: {
+    start: string
+    end: string
+  }
 }
 
 export interface VesselEventsGeneratorConfig extends GeneratorConfig {

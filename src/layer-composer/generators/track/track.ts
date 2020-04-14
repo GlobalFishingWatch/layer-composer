@@ -44,6 +44,19 @@ const filterByTimerange = (data: FeatureCollection, start: string, end: string) 
   return filteredData
 }
 
+const getHighlightedData = (
+  data: FeatureCollection,
+  highlightedStart: string,
+  highlightedEnd: string
+) => {
+  const startMs = new Date(highlightedStart).getTime()
+  const endMs = new Date(highlightedEnd).getTime()
+
+  const filteredData = filterGeoJSONByTimerange(data, startMs, endMs)
+
+  return filteredData
+}
+
 class TrackGenerator {
   type = Type.Track
 
@@ -52,11 +65,13 @@ class TrackGenerator {
       type: 'FeatureCollection',
       features: [],
     }
+
     const source = {
       id: config.id,
       type: 'geojson',
       data: config.data || defaultGeoJSON,
     }
+    const sources = [source]
 
     if (config.zoomLoadLevel && config.simplify) {
       source.data = memoizeCache[config.id].simplifyTrackWithZoomLevel(
@@ -69,7 +84,21 @@ class TrackGenerator {
       source.data = memoizeCache[config.id].filterByTimerange(source.data, config.start, config.end)
     }
 
-    return [source]
+    if (config.highlightedTime) {
+      const highlightedData = memoizeCache[config.id].getHighlightedData(
+        source.data,
+        config.highlightedTime.start,
+        config.highlightedTime.end
+      )
+      const highlightedSource = {
+        id: `${config.id}_highlighted`,
+        type: 'geojson',
+        data: highlightedData,
+      }
+      sources.push(highlightedSource)
+    }
+
+    return sources
   }
 
   _getStyleLayers = (config: TrackGeneratorConfig) => {
@@ -83,13 +112,30 @@ class TrackGenerator {
         group: Group.Track,
       },
     }
-    return [layer]
+    const layers = [layer]
+    if (config.highlightedTime) {
+      const highlightedId = `${config.id}_highlighted`
+      const highlightedLayer = {
+        type: 'line',
+        id: highlightedId,
+        source: highlightedId,
+        layout: {},
+        paint: { 'line-color': 'white', 'line-width': 2 },
+        metadata: {
+          group: Group.TrackHighlighted,
+        },
+      }
+      layers.push(highlightedLayer)
+    }
+
+    return layers
   }
 
   getStyle = (config: TrackGeneratorConfig) => {
     memoizeByLayerId(config.id, {
       simplifyTrackWithZoomLevel: memoizeOne(simplifyTrackWithZoomLevel),
       filterByTimerange: memoizeOne(filterByTimerange),
+      getHighlightedData: memoizeOne(getHighlightedData),
     })
     return {
       id: config.id,
