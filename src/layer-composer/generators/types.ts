@@ -26,6 +26,7 @@ export interface GlobalGeneratorConfig {
 export interface GeneratorConfig extends GlobalGeneratorConfig {
   id: string
   datasetParamsId?: string
+  dataviewId?: string
   type: Type | string
   visible?: boolean
   opacity?: number
