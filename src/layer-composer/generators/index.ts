@@ -3,7 +3,11 @@ import BackgroundGenerator, { DEFAULT_BASEMAP_COLOR } from './background/backgro
 import BaseMapGenerator from './basemap/basemap'
 import GLStyleGenerator from './gl/gl'
 import CartoGenerator, { CARTO_FISHING_MAP_API } from './carto-polygons/carto-polygons'
-import HeatmapGenerator, { HEATMAP_GEOM_TYPES, HEATMAP_COLOR_RAMPS } from './heatmap/heatmap'
+import HeatmapAnimatedGenerator, {
+  HEATMAP_GEOM_TYPES,
+  HEATMAP_COLOR_RAMPS,
+} from './heatmap-animated/heatmap-animated'
+import HeatmapGenerator from './heatmap/heatmap'
 import TrackGenerator from './track/track'
 import VesselEventsGenerator from './vessel-events/vessel-events'
 
@@ -14,6 +18,7 @@ export default {
   [Type.Basemap]: new BaseMapGenerator(),
   [Type.GL]: new GLStyleGenerator(),
   [Type.CartoPolygons]: new CartoGenerator({ baseUrl: CARTO_FISHING_MAP_API }),
+  [Type.HeatmapAnimated]: new HeatmapAnimatedGenerator({}),
   [Type.Heatmap]: new HeatmapGenerator({}),
   [Type.Track]: new TrackGenerator(),
   [Type.VesselEvents]: new VesselEventsGenerator(),
