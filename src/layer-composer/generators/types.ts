@@ -7,6 +7,7 @@ export enum Type {
   CartoPolygons = 'CARTO_POLYGONS',
   GL = 'GL',
   Heatmap = 'HEATMAP',
+  HeatmapAnimated = 'HEATMAP_ANIMATED',
   Track = 'TRACK',
   VesselEvents = 'VESSEL_EVENTS',
 }
