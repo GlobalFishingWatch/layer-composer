@@ -9,6 +9,7 @@ import memoizeOne from 'memoize-one'
 import { memoizeByLayerId, memoizeCache } from '../../utils'
 
 export const HEATMAP_TYPE = 'HEATMAP'
+export const HEATMAP_DEFAULT_MAX_ZOOM = 12
 const API_TILES_URL = 'https://fst-tiles-jzzp2ui3wq-uc.a.run.app/v1'
 const API_ENDPOINTS = {
   tiles: 'tile/heatmap/{z}/{x}/{y}',
@@ -93,6 +94,12 @@ const toQuantizedDays = (date: string, quantizeOffset: number) => {
   return days - quantizeOffset
 }
 
+type stats = {
+  max: number
+  min: number
+  median: number
+}
+
 class HeatmapGenerator {
   type = Type.Heatmap
   loadingStats = false
@@ -100,11 +107,7 @@ class HeatmapGenerator {
   quantizeOffset = 0
   currentSetDeltaDebounced: any
   delta = 0
-  stats = {
-    max: 30,
-    min: 1,
-    median: 2,
-  }
+  stats: stats | null = null
 
   constructor({ fastTilesAPI = API_TILES_URL }) {
     this.fastTilesAPI = fastTilesAPI
@@ -137,20 +140,19 @@ class HeatmapGenerator {
       statsUrl.searchParams.set('filters', serverSideFilters)
     }
     return fetch(statsUrl.toString(), { cache: 'force-cache' })
-      .then((r) => r.json())
       .then((r) => {
-        // prevent values being exactly the same to avoid a style error
-        const min = r.min - 0.001
-        const median = r.median
-        const max = r.max + 0.001
-        const stats = {
-          min,
-          median,
-          max,
-        }
-        this.stats = stats
+        if (r.ok) return r.json()
+        throw r
+      })
+      .then((statsResponse) => {
+        this.stats = statsResponse
         this.loadingStats = false
-        return stats
+        return statsResponse
+      })
+      .catch((e) => {
+        console.warn(e)
+        this.loadingStats = false
+        return e
       })
   }
 
@@ -189,8 +191,7 @@ class HeatmapGenerator {
         id: layer.id,
         type: 'temporalgrid' as const,
         tiles: [decodeURI(url.toString())],
-        minzoom: 1,
-        maxzoom: 12,
+        maxzoom: layer.maxZoom || HEATMAP_DEFAULT_MAX_ZOOM,
       },
     ]
   }
@@ -203,24 +204,25 @@ class HeatmapGenerator {
     const delta = this.delta
     const overallMult = colorRampMult * delta
 
-    const medianOffseted = this.stats.median - this.stats.min + 0.001
-    const maxOffseted = this.stats.max - this.stats.min + 0.002
-    const medianMaxOffsetedValue = medianOffseted + (maxOffseted - medianOffseted) / 2
-    const stops = [
-      // probably always start at 0 (black alpha)
-      Math.min(this.stats.min - 0.001, 0),
-      // first meaningful value = use minimum value in stats
-      this.stats.min,
-      // next step = use median value in stats
-      this.stats.min + medianOffseted * overallMult,
-      // this is the intermediate value bnetween median and max
-      this.stats.min + medianMaxOffsetedValue * overallMult,
-      // final step = max value for current zoom level
-      this.stats.min + maxOffseted * overallMult,
-    ]
+    let stops: number[] = []
+    if (this.stats !== null) {
+      const medianOffseted = this.stats.median - this.stats.min + 0.001
+      const maxOffseted = this.stats.max - this.stats.min + 0.002
+      const medianMaxOffsetedValue = medianOffseted + (maxOffseted - medianOffseted) / 2
+      stops = [
+        // first meaningful value = use minimum value in stats
+        this.stats.min,
+        // next step = use median value in stats
+        this.stats.min + medianOffseted * overallMult,
+        // this is the intermediate value bnetween median and max
+        this.stats.min + medianMaxOffsetedValue * overallMult,
+        // final step = max value for current zoom level
+        this.stats.min + maxOffseted * overallMult,
+      ]
+    }
 
     const originalColorRamp = HEATMAP_COLOR_RAMPS_RAMPS[colorRampType as any]
-    let legend = zip(stops, originalColorRamp)
+    let legend = stops.length ? zip(stops, originalColorRamp) : []
 
     const colorRampValues = flatten(legend)
 
@@ -228,7 +230,10 @@ class HeatmapGenerator {
     const pickValueAt = layer.singleFrame ? 'value' : d.toString()
 
     const valueExpression = ['to-number', ['get', pickValueAt]]
-    const colorRamp = ['interpolate', ['linear'], valueExpression, ...colorRampValues]
+    const colorRamp =
+      colorRampValues.length > 0
+        ? ['interpolate', ['linear'], valueExpression, ...colorRampValues]
+        : 'transparent'
     const paint = { ...(paintByGeomType as any)[geomType] }
     switch (geomType) {
       case HEATMAP_GEOM_TYPES.GRIDDED:
@@ -307,7 +312,8 @@ class HeatmapGenerator {
 
   _getStyleLayers = (layer: HeatmapGeneratorConfig) => {
     const zoom = Math.floor(layer.zoom)
-    if (layer.fetchStats !== true || zoom === 0) {
+    const maxZoom = layer.maxZoom || HEATMAP_DEFAULT_MAX_ZOOM
+    if (layer.fetchStats !== true || zoom > maxZoom) {
       return { layers: this._getHeatmapLayers(layer) }
     }
     const serverSideFilters = this._getServerSideFilters(
