@@ -99,6 +99,7 @@ export interface HeatmapGeneratorConfig extends GeneratorConfig {
   start: string
   end: string
   zoom: number
+  maxZoom?: number
   delta?: number
   tileset: string
   geomType: string
