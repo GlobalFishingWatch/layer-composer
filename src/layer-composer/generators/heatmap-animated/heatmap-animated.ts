@@ -25,6 +25,7 @@ export const toDays = (date: string) => {
 }
 
 export const DEFAULT_QUANTIZE_OFFSET = toDays('2019-01-01T00:00:00.000Z')
+export const HEATMAP_TYPE = 'HEATMAP'
 
 export type Geoms = 'blob' | 'gridded' | 'extruded'
 export type HeatmapGeoms = {
