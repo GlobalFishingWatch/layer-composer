@@ -2,6 +2,8 @@ import { Layer } from 'mapbox-gl'
 import { Group } from '../../types'
 import { Type, BackgroundGeneratorConfig } from '../types'
 
+export const DEFAULT_BASEMAP_COLOR = '#00265c'
+
 class BackgroundGenerator {
   type = Type.Background
 
@@ -13,7 +15,7 @@ class BackgroundGenerator {
         visibility: layer.visible !== undefined ? (layer.visible ? 'visible' : 'none') : 'visible',
       },
       paint: {
-        'background-color': layer.color || '#0A1738',
+        'background-color': layer.color || DEFAULT_BASEMAP_COLOR,
       },
       metadata: {
         group: Group.Background,
