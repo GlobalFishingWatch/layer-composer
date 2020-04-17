@@ -3,12 +3,16 @@ import compact from 'lodash/compact'
 import debounce from 'lodash/debounce'
 import zip from 'lodash/zip'
 import { Group } from '../../types'
-import { Type, HeatmapGeneratorConfig, HeatmapColorRamp, HeatmapColorRampColors } from '../types'
-import paintByGeomType from './heatmap-animated-layers-paint'
+import {
+  Type,
+  HeatmapAnimatedGeneratorConfig,
+  HeatmapColorRamp,
+  HeatmapColorRampColors,
+} from '../types'
+import paintByGeomType from '../heatmap/heatmap-layers-paint'
 import memoizeOne from 'memoize-one'
 import { memoizeByLayerId, memoizeCache } from '../../utils'
 
-export const HEATMAP_TYPE = 'HEATMAP_ANIMATED'
 export const HEATMAP_DEFAULT_MAX_ZOOM = 12
 const API_TILES_URL = 'https://fst-tiles-jzzp2ui3wq-uc.a.run.app/v1'
 const API_ENDPOINTS = {
@@ -101,7 +105,7 @@ type stats = {
 }
 
 class HeatmapGenerator {
-  type = Type.Heatmap
+  type = Type.HeatmapAnimated
   loadingStats = false
   fastTilesAPI: string
   quantizeOffset = 0
@@ -156,7 +160,7 @@ class HeatmapGenerator {
       })
   }
 
-  _getStyleSources = (layer: HeatmapGeneratorConfig) => {
+  _getStyleSources = (layer: HeatmapAnimatedGeneratorConfig) => {
     if (!layer.start || !layer.end || !layer.tileset) {
       throw new Error(
         `Heatmap generator must specify start, end and tileset parameters in ${layer}`
@@ -169,11 +173,6 @@ class HeatmapGenerator {
     url.searchParams.set('geomType', geomType)
     url.searchParams.set('quantizeOffset', this.quantizeOffset.toString())
     url.searchParams.set('delta', this.delta.toString())
-
-    if (layer.singleFrame === true) {
-      url.searchParams.set('singleFrame', layer.singleFrame.toString())
-      url.searchParams.set('start', layer.start)
-    }
 
     if (layer.serverSideFilter) {
       url.searchParams.set(
@@ -196,7 +195,7 @@ class HeatmapGenerator {
     ]
   }
 
-  _getHeatmapLayers = (layer: HeatmapGeneratorConfig) => {
+  _getHeatmapLayers = (layer: HeatmapAnimatedGeneratorConfig) => {
     const geomType = layer.geomType || HEATMAP_GEOM_TYPES.GRIDDED
     const colorRampType = layer.colorRamp || HEATMAP_COLOR_RAMPS.PRESENCE
     const colorRampMult = layer.colorRampMult || 1
@@ -227,7 +226,7 @@ class HeatmapGenerator {
     const colorRampValues = flatten(legend)
 
     const d = toQuantizedDays(layer.start, this.quantizeOffset)
-    const pickValueAt = layer.singleFrame ? 'value' : d.toString()
+    const pickValueAt = d.toString()
 
     const valueExpression = ['to-number', ['get', pickValueAt]]
     const colorRamp =
@@ -310,7 +309,7 @@ class HeatmapGenerator {
     ]
   }
 
-  _getStyleLayers = (layer: HeatmapGeneratorConfig) => {
+  _getStyleLayers = (layer: HeatmapAnimatedGeneratorConfig) => {
     const zoom = Math.floor(layer.zoom)
     const maxZoom = layer.maxZoom || HEATMAP_DEFAULT_MAX_ZOOM
     if (layer.fetchStats !== true || zoom > maxZoom) {
@@ -339,7 +338,7 @@ class HeatmapGenerator {
     return { layers, promise }
   }
 
-  _updateDelta = (layer: HeatmapGeneratorConfig) => {
+  _updateDelta = (layer: HeatmapAnimatedGeneratorConfig) => {
     const newDelta = getDelta(layer.start, layer.end)
     if (newDelta === this.delta) return null
 
@@ -357,7 +356,7 @@ class HeatmapGenerator {
   }
   _setDelta = debounce(this._updateDelta, 1000)
 
-  getStyle = (layer: HeatmapGeneratorConfig) => {
+  getStyle = (layer: HeatmapAnimatedGeneratorConfig) => {
     memoizeByLayerId(layer.id, {
       _fetchStats: memoizeOne(this._fetchStats),
     })
@@ -365,9 +364,6 @@ class HeatmapGenerator {
       this.delta = getDelta(layer.start, layer.end)
     }
     this.quantizeOffset = layer.quantizeOffset || DEFAULT_QUANTIZE_OFFSET
-    if (layer.singleFrame === true) {
-      this.quantizeOffset = layer.start as any
-    }
     const { layers, promise } = this._getStyleLayers(layer)
     const deltaPromise: any = this._updateDelta(layer)
     const promises = compact([promise, deltaPromise])
