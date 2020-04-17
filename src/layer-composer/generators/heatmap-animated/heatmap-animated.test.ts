@@ -1,12 +1,7 @@
 import Composer from '../..'
 import { validate as mapboxStyleValidator } from '@mapbox/mapbox-gl-style-spec'
-import HeatmapGenerator, {
-  HEATMAP_TYPE,
-  HEATMAP_GEOM_TYPES,
-  HEATMAP_COLOR_RAMPS,
-  DEFAULT_QUANTIZE_OFFSET,
-  toDays,
-} from './heatmap'
+import { HEATMAP_GEOM_TYPES, HEATMAP_COLOR_RAMPS } from '../heatmap/config'
+import HeatmapGenerator, { HEATMAP_TYPE, DEFAULT_QUANTIZE_OFFSET, toDays } from './heatmap-animated'
 
 const FAST_TILES_API = 'https://fst-tiles-jzzp2ui3wq-uc.a.run.app/v1/'
 const START = '2019-01-01T00:00:00.000Z'
