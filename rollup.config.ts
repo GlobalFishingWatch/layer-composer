@@ -6,23 +6,11 @@ import typescript from 'rollup-plugin-typescript2'
 import json from 'rollup-plugin-json'
 import { terser } from 'rollup-plugin-terser'
 import camelCase from 'lodash/camelCase'
-import upperFirst from 'lodash/upperFirst'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('./package.json')
-const distFolder = pkg.main.split('/')[0]
-const { workerName, libraryName } = pkg
+const { libraryName } = pkg
 const isProduction = process.env.NODE_ENV === 'production'
-
-const workerConfig = {
-  input: `./src/${workerName}/index.ts`,
-  output: {
-    file: `./${distFolder}/workers/${workerName}.js`,
-    format: 'iife',
-    sourcemap: true,
-    name: upperFirst(camelCase(workerName)),
-  },
-}
 
 const libConfig = {
   input: 'src/index.ts',
@@ -68,7 +56,4 @@ const sharedConfig = {
   ],
 }
 
-export default [
-  { ...workerConfig, ...sharedConfig },
-  { ...libConfig, ...sharedConfig },
-]
+export default [{ ...libConfig, ...sharedConfig }]

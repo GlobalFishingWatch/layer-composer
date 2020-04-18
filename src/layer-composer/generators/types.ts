@@ -7,6 +7,7 @@ export enum Type {
   CartoPolygons = 'CARTO_POLYGONS',
   GL = 'GL',
   Heatmap = 'HEATMAP',
+  HeatmapAnimated = 'HEATMAP_ANIMATED',
   Track = 'TRACK',
   VesselEvents = 'VESSEL_EVENTS',
 }
@@ -99,15 +100,18 @@ export interface HeatmapGeneratorConfig extends GeneratorConfig {
   start: string
   end: string
   zoom: number
-  delta?: number
+  maxZoom?: number
   tileset: string
   geomType: string
-  singleFrame?: boolean
   fetchStats?: boolean
+  colorRamp?: ColorRamps
   serverSideFilter?: string
   updateColorRampOnTimeChange?: boolean
+}
+
+export interface HeatmapAnimatedGeneratorConfig extends HeatmapGeneratorConfig {
+  delta?: number
   quantizeOffset?: number
-  colorRamp: ColorRamps
   colorRampMult: number
 }
 

@@ -106,7 +106,6 @@ dist
 
 # builds
 dist
-dist-workers
 docs
 
 # misc

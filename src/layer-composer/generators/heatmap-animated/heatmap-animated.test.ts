@@ -1,12 +1,8 @@
 import Composer from '../..'
 import { validate as mapboxStyleValidator } from '@mapbox/mapbox-gl-style-spec'
-import HeatmapGenerator, {
-  HEATMAP_TYPE,
-  HEATMAP_GEOM_TYPES,
-  HEATMAP_COLOR_RAMPS,
-  DEFAULT_QUANTIZE_OFFSET,
-  toDays,
-} from './heatmap'
+import { HEATMAP_GEOM_TYPES, HEATMAP_COLOR_RAMPS } from '../heatmap/config'
+import HeatmapGenerator, { DEFAULT_QUANTIZE_OFFSET, toDays } from './heatmap-animated'
+import { Type } from '../types'
 
 const FAST_TILES_API = 'https://fst-tiles-jzzp2ui3wq-uc.a.run.app/v1/'
 const START = '2019-01-01T00:00:00.000Z'
@@ -39,7 +35,7 @@ test('returns a valid style for a simple static gridded heatmap', async () => {
   const LayerComposer = new Composer()
   const { style } = LayerComposer.getGLStyle([
     {
-      type: HEATMAP_TYPE,
+      type: Type.Heatmap,
       ...LAYER_DEFINITION,
     },
   ])
