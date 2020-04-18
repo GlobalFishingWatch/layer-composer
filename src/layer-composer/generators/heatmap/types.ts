@@ -14,6 +14,7 @@ export type stats = {
   median: number
   avg: number
   zoom: number
+  area: number
 }
 
 export type statsByZoom = {

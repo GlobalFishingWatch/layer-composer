@@ -63,8 +63,9 @@ class HeatmapGenerator {
 
     let stops: number[] = []
     const zoom = Math.min(Math.floor(layer.zoom), layer.maxZoom || HEATMAP_DEFAULT_MAX_ZOOM)
-    if (this.stats !== null && this.stats[zoom]) {
-      const { min, max, avg } = this.stats[zoom]
+    const statsByZoom = (this.stats !== null && this.stats[zoom]) || null
+    if (statsByZoom) {
+      const { min, max, avg } = statsByZoom
       stops = [0, min, min + (avg - min) / 2, avg, (max - avg) / 2, max]
 
       // const isAvgCloserToMin = avg - min < max - avg
@@ -148,6 +149,7 @@ class HeatmapGenerator {
         paint,
         metadata: {
           legend,
+          gridArea: statsByZoom && statsByZoom.area,
           currentlyAt: pickValueAt,
           group: Group.Heatmap,
         },
