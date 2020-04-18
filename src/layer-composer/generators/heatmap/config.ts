@@ -31,10 +31,10 @@ export const HEATMAP_COLOR_RAMPS_RAMPS: HeatmapColorRampColors = {
   [HEATMAP_COLOR_RAMPS.PRESENCE]: [
     DEFAULT_BASEMAP_COLOR,
     '#163F89',
-    '#0F6F97',
-    '#07BBAE',
+    '#0B9FA6',
     '#00FFC3',
-    '#ffffff',
+    '#80FFE1',
+    '#FFFFFF',
   ],
   [HEATMAP_COLOR_RAMPS.RECEPTION]: ['rgb(255, 69, 115)', '#7b2e8d', '#093b76', '#0c276c'],
 }
