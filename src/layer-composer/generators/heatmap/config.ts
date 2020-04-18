@@ -8,11 +8,15 @@ export const API_ENDPOINTS = {
   statistics: 'statistics',
 }
 
+export const HEATMAP_DEFAULT_MAX_ZOOM = 12
+
 export const HEATMAP_GEOM_TYPES: HeatmapGeoms = {
   BLOB: 'blob',
   GRIDDED: 'gridded',
   EXTRUDED: 'extruded',
 }
+
+export const HEATMAP_DEFAULT_GEOM_TYPE = HEATMAP_GEOM_TYPES.GRIDDED
 
 export const HEATMAP_GEOM_TYPES_GL_TYPES: HeatmapGeomGL = {
   [HEATMAP_GEOM_TYPES.BLOB]: 'heatmap',

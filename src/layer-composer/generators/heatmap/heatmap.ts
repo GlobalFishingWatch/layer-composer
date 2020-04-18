@@ -13,15 +13,13 @@ import {
   HEATMAP_COLOR_RAMPS,
   HEATMAP_COLOR_RAMPS_RAMPS,
   HEATMAP_GEOM_TYPES_GL_TYPES,
+  HEATMAP_DEFAULT_MAX_ZOOM,
+  HEATMAP_DEFAULT_GEOM_TYPE,
 } from './config'
 import { statsByZoom } from './types'
 
-export const HEATMAP_TYPE = 'HEATMAP'
-export const HEATMAP_DEFAULT_MAX_ZOOM = 12
-
 class HeatmapGenerator {
   type = Type.Heatmap
-  loadingStats = false
   fastTilesAPI: string
   statsError = 0
   stats: statsByZoom | null = null
@@ -36,7 +34,7 @@ class HeatmapGenerator {
         `Heatmap generator must specify start, end and tileset parameters in ${layer}`
       )
     }
-    const geomType = layer.geomType || HEATMAP_GEOM_TYPES.GRIDDED
+    const geomType = layer.geomType || HEATMAP_DEFAULT_GEOM_TYPE
 
     const tilesUrl = `${this.fastTilesAPI}/${layer.tileset}/${API_ENDPOINTS.tiles}`
     const url = new URL(tilesUrl)
@@ -85,11 +83,11 @@ class HeatmapGenerator {
       })
     }
 
+    const pickValueAt = 'value'
     const originalColorRamp = HEATMAP_COLOR_RAMPS_RAMPS[colorRampType as string]
     const legend = stops.length ? zip(stops, originalColorRamp) : []
 
     const colorRampValues = flatten(legend)
-    const pickValueAt = 'value'
     const valueExpression = ['to-number', ['get', pickValueAt]]
     const colorRamp =
       colorRampValues.length > 0

@@ -3,80 +3,28 @@ import compact from 'lodash/compact'
 import debounce from 'lodash/debounce'
 import zip from 'lodash/zip'
 import { Group } from '../../types'
+import { Type, HeatmapAnimatedGeneratorConfig } from '../types'
+import { statsByZoom } from '../heatmap/types'
 import {
-  Type,
-  HeatmapAnimatedGeneratorConfig,
-  HeatmapColorRamp,
-  HeatmapColorRampColors,
-} from '../types'
+  API_TILES_URL,
+  API_ENDPOINTS,
+  HEATMAP_DEFAULT_MAX_ZOOM,
+  HEATMAP_GEOM_TYPES,
+  HEATMAP_COLOR_RAMPS,
+  HEATMAP_COLOR_RAMPS_RAMPS,
+  HEATMAP_GEOM_TYPES_GL_TYPES,
+  HEATMAP_DEFAULT_GEOM_TYPE,
+} from '../heatmap/config'
 import paintByGeomType from '../heatmap/heatmap-layers-paint'
 import memoizeOne from 'memoize-one'
 import { memoizeByLayerId, memoizeCache } from '../../utils'
-
-export const HEATMAP_DEFAULT_MAX_ZOOM = 12
-const API_TILES_URL = 'https://fst-tiles-jzzp2ui3wq-uc.a.run.app/v1'
-const API_ENDPOINTS = {
-  tiles: 'tile/heatmap/{z}/{x}/{y}',
-  statistics: 'statistics',
-}
+import { getServerSideFilters, fetchStats } from '../heatmap/utils'
 
 export const toDays = (date: string) => {
   return Math.floor(new Date(date).getTime() / 1000 / 60 / 60 / 24)
 }
 
 export const DEFAULT_QUANTIZE_OFFSET = toDays('2019-01-01T00:00:00.000Z')
-export const HEATMAP_TYPE = 'HEATMAP'
-
-export type Geoms = 'blob' | 'gridded' | 'extruded'
-export type HeatmapGeoms = {
-  [key: string]: Geoms
-}
-
-export const HEATMAP_GEOM_TYPES: HeatmapGeoms = {
-  BLOB: 'blob',
-  GRIDDED: 'gridded',
-  EXTRUDED: 'extruded',
-}
-
-export type GeomGl = 'heatmap' | 'fill' | 'fill-extrusion'
-export type HeatmapGeomGL = {
-  [key: string]: GeomGl
-}
-export const HEATMAP_GEOM_TYPES_GL_TYPES: HeatmapGeomGL = {
-  [HEATMAP_GEOM_TYPES.BLOB]: 'heatmap',
-  [HEATMAP_GEOM_TYPES.GRIDDED]: 'fill',
-  [HEATMAP_GEOM_TYPES.EXTRUDED]: 'fill-extrusion',
-}
-
-export const HEATMAP_COLOR_RAMPS: HeatmapColorRamp = {
-  FISHING: 'fishing',
-  PRESENCE: 'presence',
-  RECEPTION: 'reception',
-}
-
-const HEATMAP_COLOR_RAMPS_RAMPS: HeatmapColorRampColors = {
-  [HEATMAP_COLOR_RAMPS.FISHING]: [
-    'rgba(12, 39, 108, 0)',
-    'rgb(12, 39, 108)',
-    '#3B9088',
-    '#EEFF00',
-    '#ffffff',
-  ],
-  [HEATMAP_COLOR_RAMPS.PRESENCE]: [
-    'rgba(12, 39, 108, 0)',
-    'rgb(12, 39, 108)',
-    '#114685',
-    '#00ffc3',
-    '#ffffff',
-  ],
-  [HEATMAP_COLOR_RAMPS.RECEPTION]: [
-    'rgba(255, 69, 115, 0)',
-    'rgb(255, 69, 115)',
-    '#7b2e8d',
-    '#093b76',
-    '#0c276c',
-  ],
-}
 
 // TODO this can yield different deltas depending even when start and end stays equally further apart:
 //  improve logic or throttle
@@ -90,75 +38,23 @@ const getDelta = (start: string, end: string) => {
   return daysDelta
 }
 
-// TODO This is hardcoded for now, but it will need to be set intelligently
-// const quantizeOffset = DEFAULT_QUANTIZE_OFFSET
-
 // TODO for now only works in days
 const toQuantizedDays = (date: string, quantizeOffset: number) => {
   const days = toDays(date)
   return days - quantizeOffset
 }
 
-type stats = {
-  max: number
-  min: number
-  median: number
-}
-
-class HeatmapGenerator {
+class HeatmapAnimatedGenerator {
   type = Type.HeatmapAnimated
-  loadingStats = false
   fastTilesAPI: string
   quantizeOffset = 0
   currentSetDeltaDebounced: any
   delta = 0
-  stats: stats | null = null
+  statsError = 0
+  stats: statsByZoom | null = null
 
   constructor({ fastTilesAPI = API_TILES_URL }) {
     this.fastTilesAPI = fastTilesAPI
-  }
-
-  _getServerSideFilters = (
-    serverSideFilter = '',
-    start: string,
-    end: string,
-    useStartAndEnd = false
-  ) => {
-    const serverSideFiltersList = []
-
-    if (serverSideFilter) {
-      serverSideFiltersList.push(serverSideFilter)
-    }
-
-    if (useStartAndEnd) {
-      serverSideFiltersList.push(`timestamp > '${start.slice(0, 19).replace('T', ' ')}'`)
-      serverSideFiltersList.push(`timestamp < '${end.slice(0, 19).replace('T', ' ')}'`)
-    }
-    const serverSideFilters = serverSideFiltersList.join(' AND ')
-    return serverSideFilters
-  }
-
-  _fetchStats = (tileset: string, zoom: number, serverSideFilters: string) => {
-    this.loadingStats = true
-    const statsUrl = new URL(`${this.fastTilesAPI}/${tileset}/${API_ENDPOINTS.statistics}/${zoom}`)
-    if (serverSideFilters) {
-      statsUrl.searchParams.set('filters', serverSideFilters)
-    }
-    return fetch(statsUrl.toString(), { cache: 'force-cache' })
-      .then((r) => {
-        if (r.ok) return r.json()
-        throw r
-      })
-      .then((statsResponse) => {
-        this.stats = statsResponse
-        this.loadingStats = false
-        return statsResponse
-      })
-      .catch((e) => {
-        console.warn(e)
-        this.loadingStats = false
-        return e
-      })
   }
 
   _getStyleSources = (layer: HeatmapAnimatedGeneratorConfig) => {
@@ -167,25 +63,18 @@ class HeatmapGenerator {
         `Heatmap generator must specify start, end and tileset parameters in ${layer}`
       )
     }
-    const geomType = layer.geomType || HEATMAP_GEOM_TYPES.GRIDDED
+    const geomType = layer.geomType || HEATMAP_DEFAULT_GEOM_TYPE
 
     const tilesUrl = `${this.fastTilesAPI}/${layer.tileset}/${API_ENDPOINTS.tiles}`
     const url = new URL(tilesUrl)
     url.searchParams.set('geomType', geomType)
     url.searchParams.set('quantizeOffset', this.quantizeOffset.toString())
     url.searchParams.set('delta', this.delta.toString())
+    url.searchParams.set(
+      'serverSideFilters',
+      getServerSideFilters(layer.start, layer.end, layer.serverSideFilter)
+    )
 
-    if (layer.serverSideFilter) {
-      url.searchParams.set(
-        'serverSideFilters',
-        this._getServerSideFilters(
-          layer.serverSideFilter,
-          layer.start,
-          layer.end,
-          layer.updateColorRampOnTimeChange
-        )
-      )
-    }
     return [
       {
         id: layer.id,
@@ -205,19 +94,23 @@ class HeatmapGenerator {
     const overallMult = colorRampMult * delta
 
     let stops: number[] = []
-    if (this.stats !== null) {
-      const medianOffseted = this.stats.median - this.stats.min + 0.001
-      const maxOffseted = this.stats.max - this.stats.min + 0.002
+
+    const zoom = Math.min(Math.floor(layer.zoom), layer.maxZoom || HEATMAP_DEFAULT_MAX_ZOOM)
+    const statsByZoom = (this.stats !== null && this.stats[zoom]) || null
+    if (statsByZoom) {
+      const { median, min, max } = statsByZoom
+      const medianOffseted = median - min + 0.001
+      const maxOffseted = max - min + 0.002
       const medianMaxOffsetedValue = medianOffseted + (maxOffseted - medianOffseted) / 2
       stops = [
         // first meaningful value = use minimum value in stats
-        this.stats.min,
+        min,
         // next step = use median value in stats
-        this.stats.min + medianOffseted * overallMult,
+        min + medianOffseted * overallMult,
         // this is the intermediate value bnetween median and max
-        this.stats.min + medianMaxOffsetedValue * overallMult,
+        min + medianMaxOffsetedValue * overallMult,
         // final step = max value for current zoom level
-        this.stats.min + maxOffseted * overallMult,
+        min + maxOffseted * overallMult,
       ]
     }
 
@@ -311,28 +204,35 @@ class HeatmapGenerator {
   }
 
   _getStyleLayers = (layer: HeatmapAnimatedGeneratorConfig) => {
-    const zoom = Math.floor(layer.zoom)
-    const maxZoom = layer.maxZoom || HEATMAP_DEFAULT_MAX_ZOOM
-    if (layer.fetchStats !== true || zoom > maxZoom) {
+    if (layer.fetchStats !== true) {
       return { layers: this._getHeatmapLayers(layer) }
     }
-    const serverSideFilters = this._getServerSideFilters(
-      layer.serverSideFilter,
-      layer.start,
-      layer.end,
-      layer.updateColorRampOnTimeChange
-    )
 
-    const statsPromise = memoizeCache[layer.id]._fetchStats(layer.tileset, zoom, serverSideFilters)
+    const serverSideFilters = getServerSideFilters(layer.start, layer.end, layer.serverSideFilter)
+    const statsUrl = `${this.fastTilesAPI}/${layer.tileset}/${API_ENDPOINTS.statistics}`
+    const statsPromise = memoizeCache[layer.id]._fetchStats(
+      statsUrl,
+      serverSideFilters,
+      false,
+      this.statsError
+    )
     const layers = this._getHeatmapLayers(layer)
 
-    if (this.loadingStats === false) {
+    if (statsPromise.resolved) {
       return { layers }
     }
 
-    const promise = new Promise((resolve) => {
-      statsPromise.then(() => {
+    const promise = new Promise((resolve, reject) => {
+      statsPromise.then((stats: statsByZoom) => {
+        this.stats = stats
+        if (this.statsError > 0) {
+          this.statsError = 0
+        }
         resolve(this.getStyle(layer))
+      })
+      statsPromise.catch((e: any) => {
+        this.statsError++
+        reject(e)
       })
     })
 
@@ -359,7 +259,7 @@ class HeatmapGenerator {
 
   getStyle = (layer: HeatmapAnimatedGeneratorConfig) => {
     memoizeByLayerId(layer.id, {
-      _fetchStats: memoizeOne(this._fetchStats),
+      _fetchStats: memoizeOne(fetchStats),
     })
     if (!this.delta) {
       this.delta = getDelta(layer.start, layer.end)
@@ -377,4 +277,4 @@ class HeatmapGenerator {
   }
 }
 
-export default HeatmapGenerator
+export default HeatmapAnimatedGenerator
