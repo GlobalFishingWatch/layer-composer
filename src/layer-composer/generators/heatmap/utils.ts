@@ -1,3 +1,4 @@
+import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
 import { stats, statsByZoom } from './types'
 
 type ExtendedPromise<T> = Promise<T> & {
@@ -5,6 +6,7 @@ type ExtendedPromise<T> = Promise<T> & {
   error?: boolean
 }
 
+const controllerCache: { [key: string]: AbortController } = {}
 export const fetchStats = (url: string, serverSideFilters?: string, singleFrame = false) => {
   const statsUrl = new URL(url)
   if (singleFrame) {
@@ -13,7 +15,13 @@ export const fetchStats = (url: string, serverSideFilters?: string, singleFrame 
   if (serverSideFilters) {
     statsUrl.searchParams.set('filters', serverSideFilters)
   }
-  const promise: ExtendedPromise<statsByZoom> = fetch(statsUrl.toString())
+  if (controllerCache[url]) {
+    controllerCache[url].abort()
+  }
+  controllerCache[url] = new AbortController()
+  const promise: ExtendedPromise<statsByZoom> = fetch(statsUrl.toString(), {
+    signal: controllerCache[url].signal,
+  })
     .then((r) => {
       if (r.ok) return r.json()
       throw r
