@@ -14,7 +14,6 @@ import {
   HEATMAP_COLOR_RAMPS_RAMPS,
   HEATMAP_GEOM_TYPES_GL_TYPES,
   HEATMAP_DEFAULT_MAX_ZOOM,
-  HEATMAP_DEFAULT_GEOM_TYPE,
 } from './config'
 import { statsByZoom } from './types'
 
@@ -23,6 +22,7 @@ class HeatmapGenerator {
   fastTilesAPI: string
   statsError = 0
   stats: statsByZoom | null = null
+  geomType = HEATMAP_GEOM_TYPES.GRIDDED
 
   constructor({ fastTilesAPI = API_TILES_URL }) {
     this.fastTilesAPI = fastTilesAPI
@@ -34,11 +34,10 @@ class HeatmapGenerator {
         `Heatmap generator must specify start, end and tileset parameters in ${layer}`
       )
     }
-    const geomType = layer.geomType || HEATMAP_DEFAULT_GEOM_TYPE
 
     const tilesUrl = `${this.fastTilesAPI}/${layer.tileset}/${API_ENDPOINTS.tiles}`
     const url = new URL(tilesUrl)
-    url.searchParams.set('geomType', geomType)
+    url.searchParams.set('geomType', this.geomType)
     url.searchParams.set('singleFrame', 'true')
     url.searchParams.set(
       'serverSideFilters',
@@ -56,7 +55,6 @@ class HeatmapGenerator {
   }
 
   _getHeatmapLayers = (layer: HeatmapGeneratorConfig) => {
-    const geomType = layer.geomType || HEATMAP_GEOM_TYPES.GRIDDED
     const colorRampType = layer.colorRamp || HEATMAP_COLOR_RAMPS.PRESENCE
 
     let stops: number[] = []
@@ -93,46 +91,8 @@ class HeatmapGenerator {
       colorRampValues.length > 0
         ? ['interpolate', ['linear'], valueExpression, ...colorRampValues]
         : 'transparent'
-    const paint = { ...(paintByGeomType as any)[geomType] }
-    switch (geomType) {
-      case HEATMAP_GEOM_TYPES.GRIDDED:
-        paint['fill-color'] = colorRamp
-        break
-      case HEATMAP_GEOM_TYPES.EXTRUDED:
-        paint['fill-extrusion-color'] = colorRamp
-        const zoomFactor = layer.zoom ? 1 / Math.ceil(layer.zoom) : 1
-        const extrusionHeightRamp = flatten(
-          zip(stops, [
-            0,
-            10000 * zoomFactor,
-            150000 * zoomFactor,
-            300000 * zoomFactor,
-            500000 * zoomFactor,
-          ])
-        )
-        paint['fill-extrusion-height'] = [
-          'interpolate',
-          ['linear'],
-          valueExpression,
-          ...extrusionHeightRamp,
-        ]
-
-        break
-      case HEATMAP_GEOM_TYPES.BLOB:
-        paint['heatmap-weight'] = valueExpression
-        const hStops = [0, 0.005, 0.1, 0.3, 1]
-        const heatmapColorRamp = flatten(zip(hStops, originalColorRamp))
-        paint['heatmap-color'] = [
-          'interpolate',
-          ['linear'],
-          ['heatmap-density'],
-          ...heatmapColorRamp,
-        ]
-        paint['heatmap-opacity'] = layer.opacity || 1
-        break
-      default:
-        break
-    }
+    const paint: any = paintByGeomType[this.geomType]
+    paint['fill-color'] = colorRamp
 
     const visibility: 'visible' | 'none' = layer && layer.visible ? 'visible' : 'none'
     return [
@@ -140,7 +100,7 @@ class HeatmapGenerator {
         id: layer.id,
         source: layer.id,
         'source-layer': 'temporalgrid',
-        type: HEATMAP_GEOM_TYPES_GL_TYPES[geomType],
+        type: HEATMAP_GEOM_TYPES_GL_TYPES[this.geomType],
         layout: {
           visibility,
         },
