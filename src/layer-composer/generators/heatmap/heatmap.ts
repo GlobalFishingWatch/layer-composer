@@ -1,5 +1,6 @@
 import flatten from 'lodash/flatten'
 import zip from 'lodash/zip'
+import { scalePow } from 'd3-scale'
 import { Group } from '../../types'
 import { Type, HeatmapGeneratorConfig } from '../types'
 import paintByGeomType from './heatmap-layers-paint'
@@ -62,13 +63,11 @@ class HeatmapGenerator {
     const statsByZoom = (this.stats !== null && this.stats[zoom]) || null
     if (statsByZoom) {
       const { min, max, avg } = statsByZoom
-      stops = [0, min, min + (avg - min) / 2, avg, (max - avg) / 2, max]
-
-      // const isAvgCloserToMin = avg - min < max - avg
-      // const linearFactor = 1 / 3
-      // stops = isAvgCloserToMin
-      //   ? [0, min, min + (avg - min) * linearFactor, min + (avg - min) * linearFactor * 2, avg, max]
-      //   : [0, min, avg, max - (max - avg) * linearFactor * 2, max - (max - avg) * linearFactor, max]
+      const scale = scalePow()
+        .exponent(10)
+        .domain([0, 0.5, 1])
+        .range([min, avg, max])
+      stops = [0, min, scale(0.25), scale(0.5), scale(0.75), max]
 
       const prevStepValues: number[] = []
       stops = stops.map((stop, index) => {
@@ -120,7 +119,8 @@ class HeatmapGenerator {
       return { layers: this._getHeatmapLayers(layer) }
     }
 
-    const serverSideFilters = getServerSideFilters(layer.start, layer.end, layer.serverSideFilter)
+    const statsFilters = [layer.serverSideFilter, layer.statsFilter].filter((f) => f).join(' AND ')
+    const serverSideFilters = getServerSideFilters(layer.start, layer.end, statsFilters)
     // use statsError to invalidate cache and try again when it fails
     const statsUrl = `${this.fastTilesAPI}/${layer.tileset}/${API_ENDPOINTS.statistics}`
     const statsPromise = memoizeCache[layer.id]._fetchStats(

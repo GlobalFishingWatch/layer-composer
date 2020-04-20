@@ -103,6 +103,7 @@ export interface HeatmapGeneratorConfig extends GeneratorConfig {
   maxZoom?: number
   tileset: string
   fetchStats?: boolean
+  statsFilter?: string
   colorRamp?: ColorRamps
   serverSideFilter?: string
   updateColorRampOnTimeChange?: boolean
