@@ -102,8 +102,8 @@ export interface HeatmapGeneratorConfig extends GeneratorConfig {
   zoom: number
   maxZoom?: number
   tileset: string
-  geomType: string
   fetchStats?: boolean
+  statsFilter?: string
   colorRamp?: ColorRamps
   serverSideFilter?: string
   updateColorRampOnTimeChange?: boolean
@@ -111,6 +111,7 @@ export interface HeatmapGeneratorConfig extends GeneratorConfig {
 
 export interface HeatmapAnimatedGeneratorConfig extends HeatmapGeneratorConfig {
   delta?: number
+  geomType: string
   quantizeOffset?: number
   colorRampMult: number
 }
