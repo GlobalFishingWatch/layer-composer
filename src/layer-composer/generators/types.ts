@@ -89,6 +89,15 @@ export interface TrackGeneratorConfig extends GeneratorConfig {
     start: string
     end: string
   }
+  /**
+   * Sets a portion of the track to highlight visually
+   */
+  highlightedEvent?: {
+    start: string
+    end: string
+    color?: string
+    width?: number
+  }
 }
 
 export interface VesselEventsGeneratorConfig extends GeneratorConfig {
