@@ -107,8 +107,7 @@ class TrackGenerator {
     }
 
     if (config.highlightedTime) {
-      const cacheHighlightKey = `${config.id}-${this.highlightSufix}`
-      const highlightedData = memoizeCache[cacheHighlightKey].getHighlightedData(
+      const highlightedData = memoizeCache[config.id].getHighlightedData(
         source.data,
         config.highlightedTime.start,
         config.highlightedTime.end
@@ -122,8 +121,7 @@ class TrackGenerator {
     }
 
     if (config.highlightedEvent) {
-      const cacheHighlightEventKey = `${config.id}-${this.highlightEventSufix}`
-      const highlightedData = memoizeCache[cacheHighlightEventKey].getHighlightedData(
+      const highlightedData = memoizeCache[config.id].getHighlightedEventData(
         source.data,
         config.highlightedEvent.start,
         config.highlightedEvent.end
@@ -174,12 +172,8 @@ class TrackGenerator {
     memoizeByLayerId(config.id, {
       simplifyTrackWithZoomLevel: memoizeOne(simplifyTrackWithZoomLevel),
       filterByTimerange: memoizeOne(filterByTimerange),
-    })
-    memoizeByLayerId(`${config.id}-${this.highlightSufix}`, {
       getHighlightedData: memoizeOne(getHighlightedData),
-    })
-    memoizeByLayerId(`${config.id}-${this.highlightEventSufix}`, {
-      getHighlightedData: memoizeOne(getHighlightedData),
+      getHighlightedEventData: memoizeOne(getHighlightedData),
     })
     return {
       id: config.id,
