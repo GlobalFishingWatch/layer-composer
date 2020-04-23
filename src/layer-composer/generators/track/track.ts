@@ -73,11 +73,12 @@ const getHighlightedLayer = (id: string, { group = Group.TrackHighlighted, paint
   }
 }
 
+const DEFAULT_TRACK_COLOR = 'rgba(0, 193, 231, 1)'
+
 class TrackGenerator {
   type = Type.Track
   highlightSufix = '_highlighted'
   highlightEventSufix = `${this.highlightSufix}_event`
-  defaultColor = 'rgba(0, 193, 231, 1)'
 
   _getStyleSources = (config: TrackGeneratorConfig) => {
     const defaultGeoJSON: FeatureCollection = {
@@ -141,7 +142,7 @@ class TrackGenerator {
       source: config.id,
       layout: {},
       paint: {
-        'line-color': config.color || this.defaultColor,
+        'line-color': config.color || DEFAULT_TRACK_COLOR,
         'line-opacity': 0.8,
       },
       metadata: {
@@ -153,7 +154,7 @@ class TrackGenerator {
     if (config.highlightedEvent) {
       const id = `${config.id}${this.highlightEventSufix}`
       const paint = {
-        'line-color': config.color || this.defaultColor,
+        'line-color': config.color || DEFAULT_TRACK_COLOR,
         'line-width': 5,
       }
       const highlightedEventLayer = getHighlightedLayer(id, {
