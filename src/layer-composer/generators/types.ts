@@ -95,8 +95,6 @@ export interface TrackGeneratorConfig extends GeneratorConfig {
   highlightedEvent?: {
     start: string
     end: string
-    color?: string
-    width?: number
   }
 }
 

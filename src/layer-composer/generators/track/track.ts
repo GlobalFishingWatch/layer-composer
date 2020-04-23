@@ -9,10 +9,7 @@ import { memoizeByLayerId, memoizeCache } from '../../utils'
 
 const mapZoomToMinPosΔ = (zoomLoadLevel: number) => {
   // first normalize and invert z level
-  const normalizedZoom = scaleLinear()
-    .clamp(true)
-    .range([1, 0])
-    .domain([3, 12])(zoomLoadLevel)
+  const normalizedZoom = scaleLinear().clamp(true).range([1, 0]).domain([3, 12])(zoomLoadLevel)
 
   const MIN_POS_Δ_LOW_ZOOM = 0.1
   const MIN_POS_Δ_HIGH_ZOOM = 0.0005
@@ -57,7 +54,7 @@ const getHighlightedData = (
   return filteredData
 }
 
-const getHighlightedLayer = (id: string, paint = {}) => {
+const getHighlightedLayer = (id: string, { group = Group.TrackHighlighted, paint = {} } = {}) => {
   return {
     id,
     type: 'line',
@@ -69,13 +66,14 @@ const getHighlightedLayer = (id: string, paint = {}) => {
     paint: {
       'line-color': 'white',
       'line-width': 2,
+      'line-opacity': 1,
       ...paint,
     },
-    metadata: {
-      group: Group.TrackHighlighted,
-    },
+    metadata: { group },
   }
 }
+
+const DEFAULT_TRACK_COLOR = 'rgba(0, 193, 231, 1)'
 
 class TrackGenerator {
   type = Type.Track
@@ -106,20 +104,6 @@ class TrackGenerator {
       source.data = memoizeCache[config.id].filterByTimerange(source.data, config.start, config.end)
     }
 
-    if (config.highlightedTime) {
-      const highlightedData = memoizeCache[config.id].getHighlightedData(
-        source.data,
-        config.highlightedTime.start,
-        config.highlightedTime.end
-      )
-      const highlightedSource = {
-        id: `${config.id}${this.highlightSufix}`,
-        type: 'geojson',
-        data: highlightedData,
-      }
-      sources.push(highlightedSource)
-    }
-
     if (config.highlightedEvent) {
       const highlightedData = memoizeCache[config.id].getHighlightedEventData(
         source.data,
@@ -128,6 +112,20 @@ class TrackGenerator {
       )
       const highlightedSource = {
         id: `${config.id}${this.highlightEventSufix}`,
+        type: 'geojson',
+        data: highlightedData,
+      }
+      sources.push(highlightedSource)
+    }
+
+    if (config.highlightedTime) {
+      const highlightedData = memoizeCache[config.id].getHighlightedData(
+        source.data,
+        config.highlightedTime.start,
+        config.highlightedTime.end
+      )
+      const highlightedSource = {
+        id: `${config.id}${this.highlightSufix}`,
         type: 'geojson',
         data: highlightedData,
       }
@@ -143,26 +141,33 @@ class TrackGenerator {
       id: config.id,
       source: config.id,
       layout: {},
-      paint: { 'line-color': config.color || 'rgba(0, 193, 231, .7)' },
+      paint: {
+        'line-color': config.color || DEFAULT_TRACK_COLOR,
+        'line-opacity': 0.8,
+      },
       metadata: {
         group: Group.Track,
       },
     }
     const layers = [layer]
 
+    if (config.highlightedEvent) {
+      const id = `${config.id}${this.highlightEventSufix}`
+      const paint = {
+        'line-color': config.color || DEFAULT_TRACK_COLOR,
+        'line-width': 5,
+      }
+      const highlightedEventLayer = getHighlightedLayer(id, {
+        paint,
+        group: Group.TrackHighlightedEvent,
+      })
+      layers.push(highlightedEventLayer)
+    }
+
     if (config.highlightedTime) {
       const id = `${config.id}${this.highlightSufix}`
       const highlightedLayer = getHighlightedLayer(id)
       layers.push(highlightedLayer)
-    }
-    if (config.highlightedEvent) {
-      const id = `${config.id}${this.highlightEventSufix}`
-      const paint = {
-        'line-color': config.highlightedEvent.color || 'rgba(0, 193, 231, 1)',
-        'line-width': config.highlightedEvent.width || 5,
-      }
-      const highlightedEventLayer = getHighlightedLayer(id, paint)
-      layers.push(highlightedEventLayer)
     }
 
     return layers
