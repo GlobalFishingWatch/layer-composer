@@ -16,6 +16,7 @@ export enum Group {
   Default = 'default', // Default stack position when f0roup is not specified
   Point = 'point', // Events, etc
   Track = 'track', // Tracks
+  TrackHighlightedEvent = 'trackHighlightedEvent', // Fixed highlight section normally used for a event duration
   TrackHighlighted = 'trackHighlighted', // Highlighted sections of tracks
   BasemapForeground = 'BasemapForeground', // Graticule labels, bathymetry labels, etc
   Label = 'label', // All non-basemap layers labels
