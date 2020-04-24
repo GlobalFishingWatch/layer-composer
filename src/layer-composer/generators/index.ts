@@ -7,6 +7,7 @@ import HeatmapAnimatedGenerator from './heatmap-animated/heatmap-animated'
 import HeatmapGenerator from './heatmap/heatmap'
 import TrackGenerator from './track/track'
 import VesselEventsGenerator from './vessel-events/vessel-events'
+import RulersGenerator from './rulers/rulers'
 
 export { DEFAULT_BASEMAP_COLOR }
 export { HEATMAP_GEOM_TYPES, HEATMAP_COLOR_RAMPS } from './heatmap/config'
@@ -20,4 +21,5 @@ export default {
   [Type.Heatmap]: new HeatmapGenerator({}),
   [Type.Track]: new TrackGenerator(),
   [Type.VesselEvents]: new VesselEventsGenerator(),
+  [Type.Rulers]: new RulersGenerator(),
 }

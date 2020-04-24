@@ -10,6 +10,7 @@ export enum Type {
   HeatmapAnimated = 'HEATMAP_ANIMATED',
   Track = 'TRACK',
   VesselEvents = 'VESSEL_EVENTS',
+  Rulers = 'RULERS',
 }
 
 export interface Generator {
@@ -103,6 +104,16 @@ export interface VesselEventsGeneratorConfig extends GeneratorConfig {
   currentEventId?: string
 }
 
+/**
+ * Renders rulers showing a distance between two points, using great circle if needed
+ */
+export interface RulersGeneratorConfig extends GeneratorConfig {
+  /**
+   * An array defining rulers with start and end coordinates, and an isNew flag
+   */
+  data: Ruler[]
+}
+
 export interface HeatmapGeneratorConfig extends GeneratorConfig {
   start: string
   end: string
@@ -148,6 +159,18 @@ export type RawEvent = {
 }
 
 export type AuthorizationOptions = 'authorized' | 'partially' | 'unmatched'
+
+export type Ruler = {
+  start: {
+    latitude: number
+    longitude: number
+  }
+  end: {
+    latitude: number
+    longitude: number
+  }
+  isNew?: boolean
+}
 
 // ---- Heatmap Generator types
 export type ColorRamps = 'fishing' | 'presence' | 'reception'
