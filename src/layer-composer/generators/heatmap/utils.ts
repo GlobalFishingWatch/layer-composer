@@ -47,8 +47,8 @@ export const fetchStats = (url: string, serverSideFilters?: string, singleFrame 
 
 export const getServerSideFilters = (start: string, end: string, serverSideFilter = '') => {
   const serverSideFiltersList = serverSideFilter ? [serverSideFilter] : []
-  serverSideFiltersList.push(`timestamp > '${start.slice(0, 19).replace('T', ' ')}'`)
-  serverSideFiltersList.push(`timestamp < '${end.slice(0, 19).replace('T', ' ')}'`)
+  serverSideFiltersList.push(`timestamp >= '${start.slice(0, 19).replace('T', ' ')}'`)
+  serverSideFiltersList.push(`timestamp <= '${end.slice(0, 19).replace('T', ' ')}'`)
 
   return serverSideFiltersList.join(' AND ')
 }
