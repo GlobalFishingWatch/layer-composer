@@ -1,6 +1,6 @@
 {
   "name": "@globalfishingwatch/layer-composer",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "Tools to convert layer configuration to data structures needed in Mapbox GL GFW interactive maps ",
   "keywords": [
     "mapboxgl",
