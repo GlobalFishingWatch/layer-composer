@@ -63,23 +63,23 @@ class HeatmapGenerator {
     const statsByZoom = (this.stats !== null && this.stats[zoom]) || null
     if (statsByZoom) {
       const { min, max, avg } = statsByZoom
-      const precision = Array.from(max.toString()).reduce((acc) => acc * 10, 0.1)
-      const roundedMax = Math.round(max / precision) * precision
-      const scale = scalePow()
-        .exponent(10)
-        .domain([0, 0.5, 1])
-        .range([min, avg, roundedMax])
-      stops = [0, min, scale(0.25), scale(0.5), scale(0.75), roundedMax]
+      if (min && max && avg) {
+        const precision = Array.from(max.toString()).reduce((acc) => acc * 10, 0.1)
+        const roundedMax = Math.round(max / precision) * precision
+        const scale = scalePow().exponent(10).domain([0, 0.5, 1]).range([min, avg, roundedMax])
 
-      const prevStepValues: number[] = []
-      stops = stops.map((stop, index) => {
-        let roundValue = Math.round(stop)
-        if (prevStepValues.indexOf(roundValue) > -1) {
-          roundValue = prevStepValues[index - 1] + 1
-        }
-        prevStepValues.push(roundValue)
-        return roundValue
-      })
+        stops = [0, min, scale(0.25), scale(0.5), scale(0.75), roundedMax]
+
+        const prevStepValues: number[] = []
+        stops = stops.map((stop, index) => {
+          let roundValue = Math.round(stop)
+          if (prevStepValues.indexOf(roundValue) > -1) {
+            roundValue = prevStepValues[index - 1] + 1
+          }
+          prevStepValues.push(roundValue)
+          return roundValue
+        })
+      }
     }
 
     const pickValueAt = 'value'
