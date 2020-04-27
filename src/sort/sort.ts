@@ -13,6 +13,7 @@ const GROUP_ORDER = [
   Group.TrackHighlighted,
   Group.Point,
   Group.BasemapForeground,
+  Group.Tool,
   Group.Label,
   Group.Overlay,
 ]
