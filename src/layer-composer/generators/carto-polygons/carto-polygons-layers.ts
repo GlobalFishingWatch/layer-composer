@@ -97,7 +97,7 @@ export default {
           'text-size': 10,
         },
         metadata: {
-          group: Group.Label,
+          group: Group.BasemapPolygons,
         },
       },
     ],

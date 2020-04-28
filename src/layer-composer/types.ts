@@ -12,6 +12,7 @@ export enum Group {
   Basemap = 'basemap', // Satellite tiles
   Heatmap = 'heatmap', // Fill/gradient-based heatmaps
   BasemapFill = 'basemapFill', // Landmass
+  BasemapPolygons = 'basemapPolygons', // Polygons  that need to be rendered below landmass
   OutlinePolygons = 'outlinePolygons', // Conbtext layers with an outlined/hollow style such as EEZ, RFMOs, etc
   Default = 'default', // Default stack position when group is not specified
   Point = 'point', // Events, etc
