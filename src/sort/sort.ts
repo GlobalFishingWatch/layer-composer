@@ -8,6 +8,7 @@ const GROUP_ORDER = [
   Group.BasemapPolygons,
   Group.BasemapFill,
   Group.OutlinePolygons,
+  Group.OutlinePolygonsHighlighted,
   Group.Default,
   Group.Track,
   Group.TrackHighlightedEvent,

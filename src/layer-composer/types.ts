@@ -13,7 +13,8 @@ export enum Group {
   Heatmap = 'heatmap', // Fill/gradient-based heatmaps
   BasemapFill = 'basemapFill', // Landmass
   BasemapPolygons = 'basemapPolygons', // Polygons  that need to be rendered below landmass
-  OutlinePolygons = 'outlinePolygons', // Conbtext layers with an outlined/hollow style such as EEZ, RFMOs, etc
+  OutlinePolygons = 'outlinePolygons', // Context layers with an outlined/hollow style such as EEZ, RFMOs, etc
+  OutlinePolygonsHighlighted = 'outlinePolygonsHighlighted', // Context layers with selected features
   Default = 'default', // Default stack position when group is not specified
   Point = 'point', // Events, etc
   Track = 'track', // Tracks

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import layersDirectory from './carto-polygons-layers'
-import { GeneratorStyles } from 'layer-composer/types'
+import { GeneratorStyles, Group } from 'layer-composer/types'
 import { Type, CartoPolygonsGeneratorConfig } from '../types'
 
 export const CARTO_FISHING_MAP_API = 'https://carto.globalfishingwatch.org/user/admin/api/v1/map'
@@ -90,7 +90,8 @@ class CartoPolygonsGenerator {
       // TODO: make this dynamic
       if (glLayer.type === 'line') {
         paint['line-opacity'] = config.opacity !== undefined ? config.opacity : 1
-        paint['line-color'] = config.color || DEFAULT_LINE_COLOR
+        const color = config.color || DEFAULT_LINE_COLOR
+        paint['line-color'] = color
       } else if (glLayer.type === 'fill') {
         paint['fill-opacity'] = config.opacity !== undefined ? config.opacity : 1
         const fillColor = config.fillColor || DEFAULT_LINE_COLOR
@@ -99,11 +100,11 @@ class CartoPolygonsGenerator {
           const { field = 'id', values, fill = {} } = config.selectedFeatures
           const { color = fillColor, fillOutlineColor = config.color } = fill
           const matchFilter = ['match', ['get', field], values]
-          paint[`fill-color`] = [...matchFilter, color, fillColor]
-          paint[`fill-outline-color`] = [...matchFilter, fillOutlineColor, config.color]
+          paint['fill-color'] = [...matchFilter, color, fillColor]
+          paint['fill-outline-color'] = [...matchFilter, fillOutlineColor, config.color]
         } else {
-          paint[`fill-color`] = fillColor
-          paint[`fill-outline-color`] = config.color || DEFAULT_LINE_COLOR
+          paint['fill-color'] = fillColor
+          paint['fill-outline-color'] = config.color || DEFAULT_LINE_COLOR
         }
       } else if (glLayer.type === 'circle') {
         const circleColor = config.color || '#99eeff'
@@ -139,20 +140,35 @@ class CartoPolygonsGenerator {
     layers.forEach((layer: any) => {
       if (layer.type === 'line' && config.selectedFeatures?.values?.length) {
         const { field = 'id', values, fill = {} } = config.selectedFeatures
-        const { color = DEFAULT_LINE_COLOR } = fill
+        const { color = DEFAULT_LINE_COLOR, outlineColor = DEFAULT_LINE_COLOR } = fill
         const matchFilter = ['match', ['get', field], values]
-        const paint: any = {
-          'fill-color': [...matchFilter, color, 'transparent'],
-          'fill-outline-color': 'transparent',
-        }
-        const newLayer = {
+
+        const selectedFillLayer = {
           ...layer,
           id: `${layer.id}_selected_features`,
           type: 'fill',
-          paint,
+          paint: {
+            'fill-color': [...matchFilter, color, 'transparent'],
+            'fill-outline-color': 'transparent',
+          },
           layout: {},
+          metadata: {
+            ...layer.metadata,
+            group: Group.Basemap,
+          },
         }
-        newLayers.push(newLayer)
+        newLayers.push(selectedFillLayer)
+
+        const selectedHighlightLayer = {
+          ...layer,
+          id: `${layer.id}_selected_features_highlighted`,
+          paint: { ...layer.paint, 'line-color': [...matchFilter, outlineColor, 'transparent'] },
+          metadata: {
+            ...layer.metadata,
+            group: Group.OutlinePolygonsHighlighted,
+          },
+        }
+        newLayers.push(selectedHighlightLayer)
       }
     })
     return layers.concat(newLayers)
