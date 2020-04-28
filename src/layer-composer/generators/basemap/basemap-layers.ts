@@ -8,7 +8,7 @@ export const BASEMAPS = {
 }
 
 const BASEMAP_VECTOR_SOURCE = 'basemap_vector'
-export const DEFAULT_LANDMASS_COLOR = '#203560'
+export const DEFAULT_LANDMASS_COLOR = '#274777'
 
 export const layers: Dictionary<Layer> = {
   [BASEMAPS.Satellite]: {
@@ -42,14 +42,7 @@ export const layers: Dictionary<Layer> = {
     },
     paint: {
       'line-color': '#ffffff',
-      'line-opacity': {
-        base: 1,
-        stops: [
-          [0, 0.1],
-          [8, 0.2],
-          [9, 0.2],
-        ],
-      },
+      'line-opacity': 0.2,
       'line-width': 0.5,
     },
   },

@@ -2,7 +2,7 @@ import { Layer } from 'mapbox-gl'
 import { Group } from '../../types'
 import { Type, BackgroundGeneratorConfig } from '../types'
 
-export const DEFAULT_BASEMAP_COLOR = '#00265c'
+export const DEFAULT_BASEMAP_COLOR = '#002457'
 
 class BackgroundGenerator {
   type = Type.Background
