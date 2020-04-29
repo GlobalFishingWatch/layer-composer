@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import layersDirectory from './carto-polygons-layers'
-import { GeneratorStyles } from 'layer-composer/types'
+import { GeneratorStyles, Group } from 'layer-composer/types'
 import { Type, CartoPolygonsGeneratorConfig } from '../types'
 
 export const CARTO_FISHING_MAP_API = 'https://carto.globalfishingwatch.org/user/admin/api/v1/map'
+const DEFAULT_LINE_COLOR = 'white'
 
 interface CartoLayerOptions {
   id: string
@@ -74,49 +75,49 @@ class CartoPolygonsGenerator {
     }
   }
 
-  _getStyleLayers = (layer: CartoPolygonsGeneratorConfig) => {
-    const isSourceReady = this.tilesCacheByid[layer.id] !== undefined
+  _getStyleLayers = (config: CartoPolygonsGeneratorConfig) => {
+    const isSourceReady = this.tilesCacheByid[config.id] !== undefined
 
-    const layerData = (layersDirectory as any)[layer.id] || layer
-    return layerData.layers.map((glLayer: any) => {
+    const layerData = (layersDirectory as any)[config.id] || config
+    const layers: any = layerData.layers.map((glLayer: any) => {
       if (!isSourceReady) return glLayer
 
       const visibility =
-        layer.visible !== undefined ? (layer.visible ? 'visible' : 'none') : 'visible'
-      const layout = { visibility }
+        config.visible !== undefined ? (config.visible ? 'visible' : 'none') : 'visible'
+      const layout = glLayer.layout ? { ...glLayer.layout, visibility } : { visibility }
       const paint: any = {}
-      const hasSelectedFeatures =
-        layer.selectedFeatures !== undefined &&
-        layer.selectedFeatures.values &&
-        layer.selectedFeatures.values.length
+      const hasSelectedFeatures = config.selectedFeatures?.values?.length
       // TODO: make this dynamic
-      if (glLayer.type === 'fill') {
-        paint['fill-opacity'] = layer.opacity !== undefined ? layer.opacity : 1
-        const fillColor = layer.fillColor || 'rgba(0,0,0,0)'
+      if (glLayer.type === 'line') {
+        paint['line-opacity'] = config.opacity !== undefined ? config.opacity : 1
+        const color = config.color || DEFAULT_LINE_COLOR
+        paint['line-color'] = color
+      } else if (glLayer.type === 'fill') {
+        paint['fill-opacity'] = config.opacity !== undefined ? config.opacity : 1
+        const fillColor = config.fillColor || DEFAULT_LINE_COLOR
 
         if (hasSelectedFeatures) {
-          const { field = 'id', values, fill = {} } = layer.selectedFeatures
-          const { color = fillColor, fillOutlineColor = layer.color } = fill
-
+          const { field = 'id', values, fill = {} } = config.selectedFeatures
+          const { color = fillColor, fillOutlineColor = config.color } = fill
           const matchFilter = ['match', ['get', field], values]
-          paint[`fill-color`] = [...matchFilter, color, fillColor]
-          paint[`fill-outline-color`] = [...matchFilter, fillOutlineColor, layer.color]
+          paint['fill-color'] = [...matchFilter, color, fillColor]
+          paint['fill-outline-color'] = [...matchFilter, fillOutlineColor, config.color]
         } else {
-          paint[`fill-color`] = fillColor
-          paint[`fill-outline-color`] = layer.color
+          paint['fill-color'] = fillColor
+          paint['fill-outline-color'] = config.color || DEFAULT_LINE_COLOR
         }
       } else if (glLayer.type === 'circle') {
-        const circleColor = layer.color || '#99eeff'
-        const circleOpacity = layer.opacity || 1
-        const circleStrokeColor = layer.strokeColor || 'hsla(190, 100%, 45%, 0.5)'
-        const circleStrokeWidth = layer.strokeWidth || 2
-        const circleRadius = layer.radius || 5
+        const circleColor = config.color || '#99eeff'
+        const circleOpacity = config.opacity || 1
+        const circleStrokeColor = config.strokeColor || 'hsla(190, 100%, 45%, 0.5)'
+        const circleStrokeWidth = config.strokeWidth || 2
+        const circleRadius = config.radius || 5
         paint['circle-color'] = circleColor
         paint['circle-stroke-width'] = circleStrokeWidth
         paint['circle-radius'] = circleRadius
         paint['circle-stroke-color'] = circleStrokeColor
         if (hasSelectedFeatures) {
-          const { field = 'id', values, fallback = {} } = layer.selectedFeatures
+          const { field = 'id', values, fallback = {} } = config.selectedFeatures
           const {
             color = 'rgba(50, 139, 169, 0.3)',
             opacity = 1,
@@ -133,6 +134,44 @@ class CartoPolygonsGenerator {
 
       return { ...glLayer, layout, paint }
     })
+
+    const newLayers: any = []
+    // workaround to use line type for better rendering (uses antialiasing) but allows to fill the layer too
+    layers.forEach((layer: any) => {
+      if (layer.type === 'line' && config.selectedFeatures?.values?.length) {
+        const { field = 'id', values, fill = {} } = config.selectedFeatures
+        const { color = DEFAULT_LINE_COLOR, outlineColor = DEFAULT_LINE_COLOR } = fill
+        const matchFilter = ['match', ['get', field], values]
+
+        const selectedFillLayer = {
+          ...layer,
+          id: `${layer.id}_selected_features`,
+          type: 'fill',
+          paint: {
+            'fill-color': [...matchFilter, color, 'transparent'],
+            'fill-outline-color': 'transparent',
+          },
+          layout: {},
+          metadata: {
+            ...layer.metadata,
+            group: Group.Basemap,
+          },
+        }
+        newLayers.push(selectedFillLayer)
+
+        const selectedHighlightLayer = {
+          ...layer,
+          id: `${layer.id}_selected_features_highlighted`,
+          paint: { ...layer.paint, 'line-color': [...matchFilter, outlineColor, 'transparent'] },
+          metadata: {
+            ...layer.metadata,
+            group: Group.OutlinePolygonsHighlighted,
+          },
+        }
+        newLayers.push(selectedHighlightLayer)
+      }
+    })
+    return layers.concat(newLayers)
   }
 
   getStyle = (layer: CartoPolygonsGeneratorConfig): GeneratorStyles => {
