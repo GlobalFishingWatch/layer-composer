@@ -1,5 +1,19 @@
 export { LayerComposerStyles, LayerComposerOptions, GeneratorStyles } from './layer-composer/types'
-export { Type, Generator, GeneratorConfig } from './layer-composer/generators/types'
+export {
+  Type,
+  Generator,
+  GeneratorConfig,
+  BackgroundGeneratorConfig,
+  GlGeneratorConfig,
+  CartoPolygonsGeneratorConfig,
+  TrackGeneratorConfig,
+  VesselEventsGeneratorConfig,
+  RulersGeneratorConfig,
+  HeatmapGeneratorConfig,
+  HeatmapAnimatedGeneratorConfig,
+  AnyGeneratorConfig,
+  Ruler,
+} from './layer-composer/generators/types'
 
 export { default, DEFAULT_CONFIG } from './layer-composer'
 

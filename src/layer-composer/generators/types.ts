@@ -140,7 +140,9 @@ export type AnyGeneratorConfig =
   | CartoPolygonsGeneratorConfig
   | TrackGeneratorConfig
   | VesselEventsGeneratorConfig
+  | RulersGeneratorConfig
   | HeatmapGeneratorConfig
+  | HeatmapAnimatedGeneratorConfig
 
 // ---- Generator specific types
 export type RawEvent = {
