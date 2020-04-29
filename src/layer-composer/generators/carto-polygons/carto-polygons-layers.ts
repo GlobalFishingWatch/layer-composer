@@ -85,7 +85,7 @@ export default {
           'line-join': 'round',
         },
         metadata: {
-          group: Group.BasemapPolygons,
+          group: Group.OutlinePolygonsBackground,
         },
       },
     ],

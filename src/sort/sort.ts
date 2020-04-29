@@ -5,7 +5,7 @@ const GROUP_ORDER = [
   Group.Background,
   Group.Basemap,
   Group.Heatmap,
-  Group.BasemapPolygons,
+  Group.OutlinePolygonsBackground,
   Group.BasemapFill,
   Group.OutlinePolygons,
   Group.OutlinePolygonsHighlighted,
