@@ -2,7 +2,7 @@ import { HeatmapGeomGL, HeatmapGeoms } from './types'
 import { HeatmapColorRampColors, HeatmapColorRamp } from '../types'
 import { DEFAULT_BASEMAP_COLOR } from '../index'
 
-export const API_TILES_URL = 'https://fst-tiles-jzzp2ui3wq-uc.a.run.app/v1'
+export const API_TILES_URL = 'https://4wings.api.dev.globalfishingwatch.org/v1'
 export const API_ENDPOINTS = {
   tiles: 'tile/heatmap/{z}/{x}/{y}',
   statistics: 'statistics',
