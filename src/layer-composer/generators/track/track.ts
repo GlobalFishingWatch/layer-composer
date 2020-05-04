@@ -3,6 +3,7 @@ import { FeatureCollection, LineString } from 'geojson'
 import memoizeOne from 'memoize-one'
 import { Group } from '../../types'
 import { Type, TrackGeneratorConfig } from '../types'
+import valuesArrayToGeoJSON from './segments-to-geojson'
 import filterGeoJSONByTimerange from './filterGeoJSONByTimerange'
 import { simplifyTrack } from './simplify-track'
 import { memoizeByLayerId, memoizeCache } from '../../utils'
@@ -89,9 +90,17 @@ class TrackGenerator {
     const source = {
       id: config.id,
       type: 'geojson',
-      data: config.data || defaultGeoJSON,
+      data: defaultGeoJSON,
     }
     const sources = [source]
+
+    if (config.data) {
+      if ((config.data as FeatureCollection).type) {
+        source.data = config.data as FeatureCollection
+      } else {
+        source.data = memoizeCache[config.id].convertToGeoJSON(config.data)
+      }
+    }
 
     if (config.zoomLoadLevel && config.simplify) {
       source.data = memoizeCache[config.id].simplifyTrackWithZoomLevel(
@@ -175,6 +184,7 @@ class TrackGenerator {
 
   getStyle = (config: TrackGeneratorConfig) => {
     memoizeByLayerId(config.id, {
+      convertToGeoJSON: memoizeOne(valuesArrayToGeoJSON),
       simplifyTrackWithZoomLevel: memoizeOne(simplifyTrackWithZoomLevel),
       filterByTimerange: memoizeOne(filterByTimerange),
       getHighlightedData: memoizeOne(getHighlightedData),
