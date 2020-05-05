@@ -40,14 +40,14 @@ class CartoPolygonsGenerator {
     this.baseUrl = baseUrl
   }
 
-  _getStyleSources = (layer: CartoPolygonsGeneratorConfig) => {
-    const { id } = layer
-    const layerData = (layersDirectory as any)[layer.id] || layer
-    const response = {
-      sources: [{ id: layer.id, ...layerData.source, tiles: [''] }],
-    }
+  _getStyleSources = (config: CartoPolygonsGeneratorConfig) => {
+    const { id } = config
+    const layerData = (layersDirectory as any)[id] || config
 
     try {
+      const response = {
+        sources: [{ id, ...layerData.source, tiles: [] }],
+      }
       if (this.tilesCacheByid[id] !== undefined) {
         response.sources[0].tiles = this.tilesCacheByid[id]
         return response
@@ -57,31 +57,30 @@ class CartoPolygonsGenerator {
         try {
           const { layergroupid } = await getCartoLayergroupId({
             id,
-            baseUrl: layer.baseUrl || this.baseUrl,
+            baseUrl: config.baseUrl || this.baseUrl,
             ...layerData.source,
           })
           const tiles = [`${CARTO_FISHING_MAP_API}/${layergroupid}/{z}/{x}/{y}.mvt`]
           this.tilesCacheByid[id] = tiles
-          return this.getStyle(layer)
+          return this.getStyle(config)
         } catch (e) {
           console.warn(e)
           return response
         }
       }
-      return { ...response, promise: promise() }
+      return { sources: [], promise: promise() }
     } catch (e) {
       console.warn(e)
-      return response
+      return { sources: [] }
     }
   }
 
   _getStyleLayers = (config: CartoPolygonsGeneratorConfig) => {
     const isSourceReady = this.tilesCacheByid[config.id] !== undefined
+    if (!isSourceReady) return []
 
     const layerData = (layersDirectory as any)[config.id] || config
     const layers: any = layerData.layers.map((glLayer: any) => {
-      if (!isSourceReady) return glLayer
-
       const visibility =
         config.visible !== undefined ? (config.visible ? 'visible' : 'none') : 'visible'
       const layout = glLayer.layout ? { ...glLayer.layout, visibility } : { visibility }
