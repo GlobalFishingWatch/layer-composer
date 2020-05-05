@@ -1,5 +1,6 @@
 import { FeatureCollection } from 'geojson'
 import { GeneratorStyles } from '../types'
+import { Segment } from './track/segments-to-geojson'
 
 export enum Type {
   Background = 'BACKGROUND',
@@ -74,7 +75,7 @@ export interface TrackGeneratorConfig extends GeneratorConfig {
   /**
    * A GeoJSON made of one or more LineStrings. Features should have `coordinateProperties` set in order to filter by time
    */
-  data: FeatureCollection
+  data: FeatureCollection | Segment[]
   /**
    * Progresseively simplify geometries when zooming out for improved performance
    */
