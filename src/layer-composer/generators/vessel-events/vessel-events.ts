@@ -77,7 +77,7 @@ class VesselsEventsGenerator {
     const activeFilter = ['case', ['==', ['get', 'active'], true]]
     const layers: any[] = [
       {
-        id: 'vessel_events_bg',
+        id: `${config.id}_background`,
         type: 'circle',
         source: config.id,
         paint: {
@@ -91,7 +91,7 @@ class VesselsEventsGenerator {
         },
       },
       {
-        id: 'vessel_events',
+        id: `${config.id}_outline`,
         source: config.id,
         type: 'symbol',
         layout: {
