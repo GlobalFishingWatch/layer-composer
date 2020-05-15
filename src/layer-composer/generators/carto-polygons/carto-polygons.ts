@@ -64,8 +64,7 @@ class CartoPolygonsGenerator {
           this.tilesCacheByid[id] = tiles
           return this.getStyle(config)
         } catch (e) {
-          console.warn(e)
-          return response
+          throw e
         }
       }
       return { sources: [], promise: promise() }
