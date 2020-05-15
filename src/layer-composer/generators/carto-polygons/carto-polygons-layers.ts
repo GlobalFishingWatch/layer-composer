@@ -24,17 +24,17 @@ export default {
       },
     ],
   },
-  sprfmo: {
+  other_rfmos: {
     source: {
-      sql: 'SELECT the_geom, the_geom_webmercator, cartodb_id as id FROM sprfmo',
+      sql: 'SELECT the_geom, the_geom_webmercator, cartodb_id FROM other_rfmo_areas',
       type: 'vector',
     },
     layers: [
       {
-        id: 'sprfmo',
+        id: 'other_rfmos',
         type: 'line',
-        source: 'sprfmo',
-        'source-layer': 'sprfmo',
+        source: 'other_rfmos',
+        'source-layer': 'other_rfmos',
         layout: {
           'line-cap': 'round',
           'line-join': 'round',
