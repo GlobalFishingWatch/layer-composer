@@ -5,7 +5,8 @@ import { Group } from '../../types'
 export default {
   cp_rfmo: {
     source: {
-      sql: 'SELECT the_geom, the_geom_webmercator, cartodb_id, id FROM carrier_portal_rfmo_hi_res',
+      sql:
+        'SELECT the_geom, the_geom_webmercator, cartodb_id, id FROM tuna_rfmos_without_coastlines',
       type: 'vector',
     },
     layers: [
@@ -24,17 +25,17 @@ export default {
       },
     ],
   },
-  sprfmo: {
+  other_rfmos: {
     source: {
-      sql: 'SELECT the_geom, the_geom_webmercator, cartodb_id as id FROM sprfmo',
+      sql: 'SELECT the_geom, the_geom_webmercator, cartodb_id FROM other_rfmos_without_coastlines',
       type: 'vector',
     },
     layers: [
       {
-        id: 'sprfmo',
+        id: 'other_rfmos',
         type: 'line',
-        source: 'sprfmo',
-        'source-layer': 'sprfmo',
+        source: 'other_rfmos',
+        'source-layer': 'other_rfmos',
         layout: {
           'line-cap': 'round',
           'line-join': 'round',

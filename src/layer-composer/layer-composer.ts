@@ -139,14 +139,19 @@ class LayerComposer {
     this.latestGenerated = { sourcesStyle, layersStyle }
 
     const promises = layersPromises.map((promise) => {
-      return promise.then((layer) => {
-        const { id, sources, layers } = layer
-        const { sourcesStyle, layersStyle } = this.latestGenerated
-        // Mutating the reference to keep the layers order
-        sourcesStyle[id] = sources
-        layersStyle[id] = layers
-        return { style: this._getStyleJson(sourcesStyle, layersStyle), layer }
-      })
+      return promise
+        .then((layer) => {
+          const { id, sources, layers } = layer
+          const { sourcesStyle, layersStyle } = this.latestGenerated
+          // Mutating the reference to keep the layers order
+          sourcesStyle[id] = sources
+          layersStyle[id] = layers
+          return { style: this._getStyleJson(sourcesStyle, layersStyle), layer }
+        })
+        .catch((e) => {
+          console.warn(e)
+          return { style: this._getStyleJson(sourcesStyle, layersStyle) }
+        })
     })
 
     return { style: this._getStyleJson(sourcesStyle, layersStyle), promises }
