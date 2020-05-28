@@ -1,2 +1,2 @@
-# layer-composer
-A set of tools to convert layer configuration to data structures needed in Mapbox GL GFW interactive maps
+# ⚠️ MOVED ⚠️
+This library has been moved to the [frontend monorepo](https://github.com/GlobalFishingWatch/frontend/tree/master/packages/layer-composer)
